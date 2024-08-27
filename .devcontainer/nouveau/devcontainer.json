@@ -2,8 +2,8 @@
   "name": "ROS 2 Dev Container",
   "dockerFile": "Dockerfile",
   "context": "../..",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/ros2-template,type=bind",
-  "workspaceFolder": "/home/ubuntu/ws_ros/src/ros2-template",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/libdvla50,type=bind",
+  "workspaceFolder": "/home/ubuntu/ws_ros/src/libdvla50",
   "remoteUser": "ubuntu",
   "runArgs": [
     "--network=host",
