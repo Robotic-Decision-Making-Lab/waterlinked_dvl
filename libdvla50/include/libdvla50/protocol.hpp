@@ -25,9 +25,6 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
-/// Shorten the namespace for convenience
-using json = nlohmann::json;
-
 namespace libdvla50
 {
 
@@ -81,7 +78,7 @@ struct VelocityReport
   double altitude;
 
   /// Transducer reports
-  std::array<TransducerReport, 4> transducers;
+  std::vector<TransducerReport> transducers;
 
   /// If true, the DVL has a lock on the reflecting surface, and the altitude and velocities are valid (True/False)
   bool velocity_valid;
@@ -95,12 +92,6 @@ struct VelocityReport
 
   /// Timestamp from immediately before sending of the report over TCP (Unix timestamp in microseconds)
   std::chrono::time_point<std::chrono::system_clock> time_of_transmission;
-
-  /// Format type and version for this report
-  std::string format{"json_v3.1"};
-
-  /// Report type
-  std::string type{"velocity"};
 };
 
 /// A dead reckoning report outputs the current speed, position, and orientation of the DVL as calculated by dead
@@ -132,14 +123,51 @@ struct DeadReckoningReport
   /// Rotation around Z axis, i.e. heading (degrees)
   double yaw;
 
-  /// Report type
-  std::string type{"position_local"};
-
   /// Reports if there are any issues with the DVL (0 if no errors, 1 otherwise)
   std::uint8_t status;
+};
 
-  /// Format type and version for this report
-  std::string format{"json_v3"};
+struct Configuration
+{
+  /// Speed of sound (1000-2000 m/s).
+  int speed_of_sound;
+
+  /// Typically 0, but can be set to be non-zero if the forward axis of the DVL is not aligned with the forward axis of
+  /// a vehicle on which it is mounted (0-360 degrees). Refer to the definition of vehicle frame of the DVL in the
+  /// protocol documentation for further information.
+  int mounting_rotation_offset;
+
+  /// true for normal operation of the DVL,false when the sending of acoustic waves from the DVL is disabled (e.g. to
+  /// save power or slow down its heating up in air).
+  bool acoustic_enabled;
+
+  /// true when the LED operates as normal, false for no blinking of the LED (e.g. if the LED is interfering with a
+  /// camera).
+  bool dark_mode_enabled;
+
+  /// auto when operating as normal, otherwise see range mode configuration in the protocol documentation.
+  std::string range_mode;
+
+  /// true for normal operation where the DVL periodically searches for bottom lock shorter than the existing bottom
+  /// lock, false if periodic cycling is disabled.
+  bool periodic_cycling_enabled;
+};
+
+/// Response sent by the DVL after a command is sent.
+struct CommandResponse
+{
+  /// The name of the command that this is a response to.
+  std::string response_to;
+
+  /// Whether or not the command was successful.
+  bool success;
+
+  /// An error message if the command was not successful.
+  std::string error_message;
+
+  /// The result of the command, if any.
+  /// NOTE: The only command that yields a response is the 'get_configuration' command.
+  nlohmann::json result;
 };
 
 }  // namespace libdvla50

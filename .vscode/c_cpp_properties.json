@@ -10,8 +10,13 @@
 =======
         "/opt/ros/rolling/include/**",
         "/usr/include/gz/**",
+<<<<<<< HEAD
         "/usr/include/eigen3/**"
 >>>>>>> 2141b28 (Added reports)
+=======
+        "/usr/include/eigen3/**",
+        "/home/${USER}/ws_ros/install/**"
+>>>>>>> 2dfdec2 (started driver implementation)
       ],
       "defines": [],
       "compilerPath": "/usr/bin/clang",
