@@ -18,22 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "libdvla50/reports.hpp"
+#pragma once
+
+#include <chrono>
+#include <cstdint>
+#include <future>
+
+#include "libdvla50/protocol.hpp"
 
 namespace libdvla50
 {
 
-namespace
+class DvlA50Driver
 {
-/// Parse a JSON string into a TransducerReport
-auto parse_transducer_report(const json & json_str) -> TransducerReport;
+public:
+  DvlA50Driver(const std::string & addr, std::uint16_t port, std::chrono::seconds session_timeout);
 
-/// Parse a JSON string into a VelocityReport
-auto parse_velocity_report(const json & json_str) -> VelocityReport;
+  ~DvlA50Driver();
 
-/// Parse a JSON string into a DeadReckoningReport
-auto parse_dead_reckoning_report(const json & json_str) -> DeadReckoningReport;
+  auto set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>;
 
-}  // namespace
+  auto set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>;
+
+  auto enable_acoustics(bool enable) -> std::future<CommandResponse>;
+
+  auto enable_dark_mode(bool enable) -> std::future<CommandResponse>;
+
+  auto set_range_mode(std::string mode) -> std::future<CommandResponse>;
+
+private:
+  /* data */
+};
 
 }  // namespace libdvla50
