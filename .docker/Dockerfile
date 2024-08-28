@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 ARG ROS_DISTRO=jazzy
 FROM ros:$ROS_DISTRO-ros-base as ci
+=======
+ARG ROS_DISTRO=rolling
+FROM ros:$ROS_DISTRO-ros-base AS ci
+>>>>>>> db1fbdb (Cleaned up dockerfile)
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
@@ -35,7 +40,7 @@ RUN apt-get -q update \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-FROM ci as robot
+FROM ci AS desktop
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -67,7 +72,7 @@ RUN python3 -m venv --system-site-packages $VIRTUAL_ENV \
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Uncomment to download and install external repos used by the project
-# RUN vcs import src < src/$PROJECT_NAME/ros2.repos
+RUN vcs import src < src/$PROJECT_NAME/ros2.repos
 
 # Install all ROS dependencies
 WORKDIR $USER_WORKSPACE
@@ -84,22 +89,9 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
     && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
-FROM robot as desktop
-
-ENV DEBIAN_FRONTEND=noninteractive
-ENV USER_WORKSPACE=/home/$USERNAME/ws_ros
 WORKDIR $USER_WORKSPACE
 
-# Install Gazebo
-RUN sudo apt-get -q update \
-    && sudo apt-get -q -y upgrade \
-    && sudo apt-get install -y \
-    ros-$ROS_DISTRO-ros-gz \
-    && sudo apt-get autoremove -y \
-    && sudo apt-get clean -y \
-    && sudo rm -rf /var/lib/apt/lists/*
-
-FROM desktop as desktop-nvidia
+FROM desktop AS desktop-nvidia
 
 # Install NVIDIA software
 RUN sudo apt-get update \
