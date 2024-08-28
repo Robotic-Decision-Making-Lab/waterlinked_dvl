@@ -14,16 +14,23 @@ include(GNUInstallDirs)
 
 find_package(ament_cmake REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 add_library(libdvla50 SHARED)
+target_sources(libdvla50 PRIVATE src/dvl.cpp)
+
 target_include_directories(
     libdvla50
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE ${PROJECT_SOURCE_DIR}/src
 )
 target_compile_features(libdvla50 PUBLIC cxx_std_20)
-target_link_libraries(libdvla50 PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(
+    libdvla50
+    PRIVATE nlohmann_json::nlohmann_json Eigen3::Eigen
+)
 set_target_properties(libdvla50 PROPERTIES PREFIX "")
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -38,6 +45,6 @@ install(
 )
 
 ament_export_targets(libdvla50Targets HAS_LIBRARY_TARGET)
-ament_export_dependencies(nlohmann_json)
+ament_export_dependencies(nlohmann_json Eigen3)
 
 ament_package()

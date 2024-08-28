@@ -6,7 +6,8 @@
         "${workspaceFolder}/**",
         "/opt/ros/rolling/include/**",
         "/usr/include/gz/**",
-        "/usr/include/eigen3/**"
+        "/usr/include/eigen3/**",
+        "/home/${USER}/ws_ros/install/**"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/clang",
