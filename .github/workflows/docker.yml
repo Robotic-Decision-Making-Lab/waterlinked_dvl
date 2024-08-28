@@ -3,7 +3,12 @@ name: Docker
 on:
   push:
     branches:
+<<<<<<< HEAD
       - humble
+=======
+      - main
+      - develop
+>>>>>>> db1fbdb (Cleaned up dockerfile)
   pull_request:
     paths:
       - .docker/**
@@ -55,6 +60,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: ${{ env.PUSH }}
 
+<<<<<<< HEAD
   robot:
     strategy:
       fail-fast: false
@@ -103,6 +109,8 @@ jobs:
           push: ${{ env.PUSH }}
           platforms: linux/amd64,linux/arm64
 
+=======
+>>>>>>> db1fbdb (Cleaned up dockerfile)
   desktop:
     strategy:
       fail-fast: false
