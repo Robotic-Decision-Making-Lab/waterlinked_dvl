@@ -157,6 +157,7 @@ struct Configuration
 struct CommandResponse
 {
   /// The name of the command that this is a response to.
+  // TODO(evan-palmer): Decide whether or not we need to keep this.
   std::string response_to;
 
   /// Whether or not the command was successful.
@@ -166,7 +167,6 @@ struct CommandResponse
   std::string error_message;
 
   /// The result of the command, if any.
-  /// NOTE: The only command that yields a response is the 'get_configuration' command.
   nlohmann::json result;
 };
 
