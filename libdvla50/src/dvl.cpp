@@ -18,8 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "libdvla50/dvl.hpp"
+
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <ranges>
+#include <stdexcept>
 
 #include "libdvla50/protocol.hpp"
 
@@ -28,6 +35,9 @@ namespace libdvla50
 
 namespace
 {
+
+/// Message delimiter used by the DVL
+constexpr char DELIMITER = '\n';
 
 /// Parse a JSON string into a TransducerReport
 auto parse_transducer_report(const nlohmann::json & data) -> TransducerReport
@@ -90,5 +100,127 @@ auto parse_dead_reckoning_report(const nlohmann::json & data) -> DeadReckoningRe
 }
 
 }  // namespace
+
+DvlA50Driver::DvlA50Driver(const std::string & addr, std::uint16_t port, std::chrono::seconds session_timeout)
+{
+  // Open a TCP socket and connect to the DVL
+  socket_ = socket(AF_INET, SOCK_STREAM, 0);
+  if (socket_ < 0) {
+    throw std::runtime_error("Failed to open UDP socket");
+  }
+
+  struct sockaddr_in sockaddr;
+
+  sockaddr.sin_family = AF_INET;
+  sockaddr.sin_port = htons(port);
+  sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
+
+  if (sockaddr.sin_addr.s_addr == INADDR_NONE) {
+    throw std::runtime_error("Invalid socket address " + addr);
+  }
+
+  if (connect(socket_, reinterpret_cast<struct sockaddr *>(&sockaddr), sizeof(sockaddr)) < 0) {
+    throw std::runtime_error("Failed to connect to TCP socket");
+  }
+
+  // Configure the socket to timeout on failed reads
+  struct timeval timeout;
+  timeout.tv_sec = session_timeout.count();
+  timeout.tv_usec = 0;
+
+  if (setsockopt(socket_, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+    throw std::runtime_error("Failed to set socket send timeout");
+  }
+
+  running_.store(true);
+}
+
+DvlA50Driver::~DvlA50Driver() { close(socket_); }
+
+auto DvlA50Driver::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
+{
+  if (send(socket_, command.dump().c_str(), command.dump().size(), 0) < 0) {
+    throw std::runtime_error("Failed to send command to DVL");
+  }
+
+  // The promise is non-copyable, so we get the future before moving the request onto the queue
+  std::promise<CommandResponse> request;
+  auto future = request.get_future();
+
+  pending_requests_[command.at("command")].emplace_back(std::move(request));
+
+  return future;
+}
+
+auto DvlA50Driver::set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"speed_of_sound", speed_of_sound}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"mounting_rotation_offset", degrees}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::enable_acoustics(bool enable) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"acoustic_enabled", enable}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::enable_dark_mode(bool enable) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"dark_mode_enabled", enable}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::enable_periodic_cycling(bool enable) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"periodic_cycling_enabled", enable}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::set_range_mode(const std::string & mode) -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"range_mode", mode}}}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::get_configuration() -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "get_config"}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::trigger_ping() -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "trigger_ping"}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::calibrate_gyro() -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "calibrate_gyro"}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::reset_dead_reckoning() -> std::future<CommandResponse>
+{
+  const nlohmann::json command = {{"command", "reset_dead_reckoning"}};
+  return send_command(command);
+}
+
+auto DvlA50Driver::register_velocity_report_callback(std::function<void(const VelocityReport &)> && callback) -> void
+{
+  velocity_report_callbacks_.emplace_back(std::move(callback));
+}
+
+auto DvlA50Driver::register_dead_reckoning_report_callback(std::function<void(const DeadReckoningReport &)> && callback)
+  -> void
+{
+  dead_reckoning_report_callbacks_.emplace_back(std::move(callback));
+}
 
 }  // namespace libdvla50
