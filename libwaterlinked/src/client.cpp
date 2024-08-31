@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "libdvla50/dvl.hpp"
+#include "libwaterlinked/client.hpp"
 
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -28,9 +28,9 @@
 #include <ranges>
 #include <stdexcept>
 
-#include "libdvla50/protocol.hpp"
+#include "libwaterlinked/protocol.hpp"
 
-namespace libdvla50
+namespace waterlinked
 {
 
 namespace
@@ -81,12 +81,12 @@ auto parse_bytes(const std::deque<std::uint8_t> & buffer) -> std::vector<nlohman
 
 }  // namespace
 
-DvlA50Driver::DvlA50Driver(const std::string & addr, std::uint16_t port, std::chrono::seconds session_timeout)
+WaterLinkedClient::WaterLinkedClient(const std::string & addr, std::uint16_t port, std::chrono::seconds session_timeout)
 {
   // Open a TCP socket and connect to the DVL
   socket_ = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_ < 0) {
-    throw std::runtime_error("Failed to open UDP socket");
+    throw std::runtime_error("Failed to open TCP socket");
   }
 
   struct sockaddr_in sockaddr;
@@ -113,11 +113,21 @@ DvlA50Driver::DvlA50Driver(const std::string & addr, std::uint16_t port, std::ch
   }
 
   running_.store(true);
+  polling_thread_ = std::thread([this] { poll_connection(); });
 }
 
-DvlA50Driver::~DvlA50Driver() { close(socket_); }
+WaterLinkedClient::~WaterLinkedClient()
+{
+  running_.store(false);
 
-auto DvlA50Driver::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
+  if (polling_thread_.joinable()) {
+    polling_thread_.join();
+  }
+
+  close(socket_);
+}
+
+auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
 {
   if (const std::string command_str{command.dump()}; send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
     throw std::runtime_error("Failed to send command to DVL");
@@ -132,67 +142,67 @@ auto DvlA50Driver::send_command(const nlohmann::json & command) -> std::future<C
   return future;
 }
 
-auto DvlA50Driver::set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>
+auto WaterLinkedClient::set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"speed_of_sound", speed_of_sound}}}});
 }
 
-auto DvlA50Driver::set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>
+auto WaterLinkedClient::set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"mounting_rotation_offset", degrees}}}});
 }
 
-auto DvlA50Driver::enable_acoustics(bool enable) -> std::future<CommandResponse>
+auto WaterLinkedClient::enable_acoustics(bool enable) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"acoustic_enabled", enable}}}});
 }
 
-auto DvlA50Driver::enable_dark_mode(bool enable) -> std::future<CommandResponse>
+auto WaterLinkedClient::enable_dark_mode(bool enable) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"dark_mode_enabled", enable}}}});
 }
 
-auto DvlA50Driver::enable_periodic_cycling(bool enable) -> std::future<CommandResponse>
+auto WaterLinkedClient::enable_periodic_cycling(bool enable) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"periodic_cycling_enabled", enable}}}});
 }
 
-auto DvlA50Driver::set_range_mode(const std::string & mode) -> std::future<CommandResponse>
+auto WaterLinkedClient::set_range_mode(const std::string & mode) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"range_mode", mode}}}});
 }
 
-auto DvlA50Driver::get_configuration() -> std::future<CommandResponse>
+auto WaterLinkedClient::get_configuration() -> std::future<CommandResponse>
 {
   return send_command({{"command", "get_config"}});
 }
 
-auto DvlA50Driver::trigger_ping() -> std::future<CommandResponse>
+auto WaterLinkedClient::trigger_ping() -> std::future<CommandResponse>
 {
   return send_command({{"command", "trigger_ping"}});
 }
 
-auto DvlA50Driver::calibrate_gyro() -> std::future<CommandResponse>
+auto WaterLinkedClient::calibrate_gyro() -> std::future<CommandResponse>
 {
   return send_command({{"command", "calibrate_gyro"}});
 }
 
-auto DvlA50Driver::reset_dead_reckoning() -> std::future<CommandResponse>
+auto WaterLinkedClient::reset_dead_reckoning() -> std::future<CommandResponse>
 {
   return send_command({{"command", "reset_dead_reckoning"}});
 }
 
-auto DvlA50Driver::register_callback(std::function<void(const VelocityReport &)> && callback) -> void
+auto WaterLinkedClient::register_callback(std::function<void(const VelocityReport &)> && callback) -> void
 {
   velocity_report_callbacks_.emplace_back(std::move(callback));
 }
 
-auto DvlA50Driver::register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void
+auto WaterLinkedClient::register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void
 {
   dead_reckoning_report_callbacks_.emplace_back(std::move(callback));
 }
 
-auto DvlA50Driver::process_json_object(const nlohmann::json & json_object) -> void
+auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) -> void
 {
   if (json_object.at("type") == "velocity") {
     for (const auto & callback : velocity_report_callbacks_) {
@@ -211,7 +221,7 @@ auto DvlA50Driver::process_json_object(const nlohmann::json & json_object) -> vo
   }
 }
 
-auto DvlA50Driver::poll_connection() -> void
+auto WaterLinkedClient::poll_connection() -> void
 {
   // Maintain a queue to store incoming data
   const std::size_t max_bytes_to_read = 1024;
@@ -245,4 +255,4 @@ auto DvlA50Driver::poll_connection() -> void
   }
 }
 
-}  // namespace libdvla50
+}  // namespace waterlinked

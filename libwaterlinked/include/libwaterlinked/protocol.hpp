@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
-namespace libdvla50
+namespace waterlinked
 {
 
 struct TransducerReport
@@ -115,13 +115,13 @@ struct DeadReckoningReport
   double std;
 
   /// Rotation around X axis (degrees)
-  double roll;
+  float roll;
 
   /// Rotation around Y axis (degrees)
-  double pitch;
+  float pitch;
 
   /// Rotation around Z axis, i.e. heading (degrees)
-  double yaw;
+  float yaw;
 
   /// Reports if there are any issues with the DVL (0 if no errors, 1 otherwise)
   std::uint8_t status;
@@ -130,12 +130,12 @@ struct DeadReckoningReport
 struct Configuration
 {
   /// Speed of sound (1000-2000 m/s).
-  int speed_of_sound;
+  std::uint16_t speed_of_sound;
 
   /// Typically 0, but can be set to be non-zero if the forward axis of the DVL is not aligned with the forward axis of
   /// a vehicle on which it is mounted (0-360 degrees). Refer to the definition of vehicle frame of the DVL in the
   /// protocol documentation for further information.
-  int mounting_rotation_offset;
+  std::uint16_t mounting_rotation_offset;
 
   /// true for normal operation of the DVL,false when the sending of acoustic waves from the DVL is disabled (e.g. to
   /// save power or slow down its heating up in air).
@@ -187,7 +187,7 @@ const char DELIMITER = '\n';
 
 }  // namespace protocol
 
-}  // namespace libdvla50
+}  // namespace waterlinked
 
 namespace nlohmann
 {
@@ -207,6 +207,19 @@ struct adl_serializer<std::chrono::duration<Rep, Period>>
   static void from_json(const json & j, std::chrono::duration<Rep, Period> & d)
   {
     d = std::chrono::duration<Rep, Period>(j.get<Rep>());
+  }
+};
+
+template <typename Scalar, int Rows, int Cols>
+struct adl_serializer<Eigen::Matrix<Scalar, Rows, Cols>>
+{
+  static void from_json(const json & j, Eigen::Matrix<Scalar, Rows, Cols> & mat)
+  {
+    for (int row = 0; row < Rows; ++row) {
+      for (int col = 0; col < Cols; ++col) {
+        mat(row, col) = j.at(row).at(col).get<Scalar>();
+      }
+    }
   }
 };
 

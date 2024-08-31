@@ -32,32 +32,32 @@
 #include <unordered_map>
 #include <vector>
 
-#include "libdvla50/protocol.hpp"
+#include "libwaterlinked/protocol.hpp"
 
-namespace libdvla50
+namespace waterlinked
 {
 
-/// A driver for the WaterLinked DVL-A50.
-class DvlA50Driver
+/// A TCP client for the WaterLinked DVL-A50.
+class WaterLinkedClient
 {
 public:
   /// Create new new interface for the WaterLinked DVL-A50 using:
   /// - The IP address of the DVL (defaults to 192.168.194.95)
   /// - The port of the DVL (defaults to 16171)
   /// - a session timeout (s, defaults to 5s)
-  explicit DvlA50Driver(
+  explicit WaterLinkedClient(
     const std::string & addr = "192.168.194.95",
     std::uint16_t port = 16171,
     std::chrono::seconds session_timeout = std::chrono::seconds(5));
 
-  ~DvlA50Driver();
+  ~WaterLinkedClient();
 
   /// Set the speed of sound (1000-2000m/s).
-  auto set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>;
+  auto set_speed_of_sound(std::uint16_t speed_of_sound) -> std::future<CommandResponse>;
 
   /// Set the mounting rotation offset. Typically 0, but can be set to be non-zero if the forward axis of the DVL is not
   /// aligned with the forward axis of a vehicle on which it is mounted (0-360 degrees).
-  auto set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>;
+  auto set_mounting_rotation_offset(std::uint16_t degrees) -> std::future<CommandResponse>;
 
   /// Set to true for normal operation of the DVL, false when the sending of acoustic waves from the DVL is disabled
   /// (e.g. to save power or slow down its heating up in air).
@@ -133,4 +133,4 @@ private:
   std::vector<std::function<void(const DeadReckoningReport &)>> dead_reckoning_report_callbacks_;
 };
 
-}  // namespace libdvla50
+}  // namespace waterlinked

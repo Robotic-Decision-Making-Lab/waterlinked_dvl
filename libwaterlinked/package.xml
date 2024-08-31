@@ -2,15 +2,15 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
 
-  <name>libdvla50</name>
+  <name>libwaterlinked</name>
   <version>0.0.1</version>
-  <description>C++ library used to interact with the WaterLinked DVL-A50</description>
+  <description>C++ library used to interact with WaterLinked DVL devices</description>
 
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
   <license>MIT</license>
 
-  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/libdvla50.git</url>
-  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/libdvla50/issues</url>
+  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/libwaterlinked.git</url>
+  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/issues</url>
 
   <author>Evan Palmer</author>
 
