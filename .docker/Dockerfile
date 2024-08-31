@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
 # Update to be your project's name
-ENV PROJECT_NAME=libdvla50
+ENV PROJECT_NAME=libwaterlinked
 
 COPY . src/$PROJECT_NAME
 

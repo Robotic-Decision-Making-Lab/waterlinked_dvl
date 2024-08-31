@@ -18,9 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "libdvla50/protocol.hpp"
+#include "libwaterlinked/protocol.hpp"
 
-namespace libdvla50
+namespace waterlinked
 {
 
 auto from_json(const nlohmann::json & j, TransducerReport & r) -> void
@@ -76,16 +76,8 @@ auto from_json(const nlohmann::json & j, VelocityReport & r) -> void
   j.at("status").get_to(r.status);
   j.at("time_of_validity").get_to(r.time_of_validity);
   j.at("time_of_transmission").get_to(r.time_of_transmission);
-
-  // TODO(evan-palmer): add transducer parsing, covariance parsing
-  // std::ranges::transform(j.at("transducers"), std::back_inserter(r.transducers), parse_transducer_report);
-
-  // const auto & covariance = j.at("covariance");
-  // for (std::size_t i = 0; i < 3; i++) {
-  //   for (std::size_t j = 0; j < 3; j++) {
-  //     r.covariance(i, j) = static_cast<double>(covariance[i][j]);
-  //   }
-  // }
+  j.at("covariance").get_to(r.covariance);
+  j.at("transducers").get_to(r.transducers);
 }
 
-}  // namespace libdvla50
+}  // namespace waterlinked

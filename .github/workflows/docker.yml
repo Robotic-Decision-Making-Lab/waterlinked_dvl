@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/libdvla50') }}
+  PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/libwaterlinked') }}
 
 jobs:
   ci:

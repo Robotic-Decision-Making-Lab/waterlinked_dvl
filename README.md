@@ -25,7 +25,7 @@ Using this template is as easy as 1, 2, 3...
 
 1. Use this repository [as a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
 for your project
-2. Replace all instances of "libdvla50" with your own project's name
+2. Replace all instances of "libwaterlinked" with your own project's name
 3. Replace the source code with your own project!
 
 Feel free to remove any unused configurations/pipelines and to adjust things as
@@ -34,5 +34,5 @@ you see fit for your project!
 ## Getting help
 
 If you have questions regarding usage of this project or would like to
-contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libdvla50/discussions)
+contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/discussions)
 board!
