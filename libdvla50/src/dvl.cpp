@@ -36,67 +36,47 @@ namespace libdvla50
 namespace
 {
 
-/// Message delimiter used by the DVL
-constexpr char DELIMITER = '\n';
-
-/// Parse a JSON string into a TransducerReport
-auto parse_transducer_report(const nlohmann::json & data) -> TransducerReport
+/// Read n_bytes from a socket and append them to a queue.
+auto read_from_socket(int socket, std::deque<std::uint8_t> & buffer, std::size_t n_bytes) -> ssize_t
 {
-  TransducerReport report;
+  std::vector<std::uint8_t> data(n_bytes);
+  const ssize_t n_read = recv(socket, data.data(), n_bytes, 0);
 
-  report.id = static_cast<std::uint8_t>(data.at("id"));
-  report.velocity = static_cast<double>(data.at("velocity"));
-  report.distance = static_cast<double>(data.at("distance"));
-  report.rssi = static_cast<double>(data.at("rssi"));
-  report.nsd = static_cast<double>(data.at("nsd"));
-  report.beam_valid = static_cast<bool>(data.at("beam_valid"));
+  if (n_read < 0) {
+    return n_read;
+  }
 
-  return report;
+  std::ranges::copy(data | std::views::take(n_read), std::back_inserter(buffer));
+  return n_read;
 }
 
-/// Parse a JSON string into a VelocityReport
-auto parse_velocity_report(const nlohmann::json & data) -> VelocityReport
+/// Parse the byte data from a buffer into a vector of JSON objects
+auto parse_bytes(const std::deque<std::uint8_t> & buffer) -> std::vector<nlohmann::json>
 {
-  VelocityReport report;
+  std::vector<nlohmann::json> json_objects;
 
-  report.time = std::chrono::milliseconds(data.at("time"));
-  report.vx = static_cast<double>(data.at("vx"));
-  report.vy = static_cast<double>(data.at("vy"));
-  report.vz = static_cast<double>(data.at("vz"));
-  report.fom = static_cast<double>(data.at("fom"));
-  report.altitude = static_cast<double>(data.at("altitude"));
-  report.velocity_valid = static_cast<bool>(data.at("velocity_valid"));
-  report.status = static_cast<std::uint8_t>(data.at("status"));
-  report.time_of_validity = std::chrono::system_clock::from_time_t(data.at("time_of_validity"));
-  report.time_of_transmission = std::chrono::system_clock::from_time_t(data.at("time_of_transmission"));
-  std::ranges::transform(data.at("transducers"), std::back_inserter(report.transducers), parse_transducer_report);
+  auto start = buffer.begin();
+  auto iter = std::find_if(start, buffer.end(), [](const std::uint8_t & b) { return b == protocol::DELIMITER; });
 
-  const auto & covariance = data.at("covariance");
-  for (std::size_t i = 0; i < 3; i++) {
-    for (std::size_t j = 0; j < 3; j++) {
-      report.covariance(i, j) = static_cast<double>(covariance[i][j]);
+  while (iter != buffer.end()) {
+    const std::vector<std::uint8_t> data(start, iter);
+
+    start = iter + 1;
+    iter = std::find_if(start, buffer.end(), [](const std::uint8_t & b) { return b == protocol::DELIMITER; });
+
+    if (data.empty()) {
+      continue;
+    }
+
+    try {
+      json_objects.push_back(nlohmann::json::parse(data));
+    }
+    catch (const std::exception & e) {
+      std::cout << "An error occurred while attempting to parse the DVL message: " << e.what() << "\n";
     }
   }
 
-  return report;
-}
-
-/// Parse a JSON string into a DeadReckoningReport
-auto parse_dead_reckoning_report(const nlohmann::json & data) -> DeadReckoningReport
-{
-  DeadReckoningReport report;
-
-  report.ts = std::chrono::system_clock::from_time_t(data.at("ts"));
-  report.x = static_cast<double>(data.at("x"));
-  report.y = static_cast<double>(data.at("y"));
-  report.z = static_cast<double>(data.at("z"));
-  report.std = static_cast<double>(data.at("std"));
-  report.roll = static_cast<double>(data.at("roll"));
-  report.pitch = static_cast<double>(data.at("pitch"));
-  report.yaw = static_cast<double>(data.at("yaw"));
-  report.status = static_cast<std::uint8_t>(data.at("status"));
-
-  return report;
+  return json_objects;
 }
 
 }  // namespace
@@ -128,7 +108,7 @@ DvlA50Driver::DvlA50Driver(const std::string & addr, std::uint16_t port, std::ch
   timeout.tv_sec = session_timeout.count();
   timeout.tv_usec = 0;
 
-  if (setsockopt(socket_, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+  if (setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
     throw std::runtime_error("Failed to set socket send timeout");
   }
 
@@ -139,88 +119,130 @@ DvlA50Driver::~DvlA50Driver() { close(socket_); }
 
 auto DvlA50Driver::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
 {
-  if (send(socket_, command.dump().c_str(), command.dump().size(), 0) < 0) {
+  if (const std::string command_str{command.dump()}; send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
     throw std::runtime_error("Failed to send command to DVL");
   }
 
   // The promise is non-copyable, so we get the future before moving the request onto the queue
-  std::promise<CommandResponse> request;
-  auto future = request.get_future();
+  std::promise<CommandResponse> response;
+  auto future = response.get_future();
 
-  pending_requests_[command.at("command")].emplace_back(std::move(request));
+  pending_requests_[command.at("command")].emplace_back(std::move(response));
 
   return future;
 }
 
 auto DvlA50Driver::set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"speed_of_sound", speed_of_sound}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"speed_of_sound", speed_of_sound}}}});
 }
 
 auto DvlA50Driver::set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"mounting_rotation_offset", degrees}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"mounting_rotation_offset", degrees}}}});
 }
 
 auto DvlA50Driver::enable_acoustics(bool enable) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"acoustic_enabled", enable}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"acoustic_enabled", enable}}}});
 }
 
 auto DvlA50Driver::enable_dark_mode(bool enable) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"dark_mode_enabled", enable}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"dark_mode_enabled", enable}}}});
 }
 
 auto DvlA50Driver::enable_periodic_cycling(bool enable) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"periodic_cycling_enabled", enable}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"periodic_cycling_enabled", enable}}}});
 }
 
 auto DvlA50Driver::set_range_mode(const std::string & mode) -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "set_config"}, {"parameters", {{"range_mode", mode}}}};
-  return send_command(command);
+  return send_command({{"command", "set_config"}, {"parameters", {{"range_mode", mode}}}});
 }
 
 auto DvlA50Driver::get_configuration() -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "get_config"}};
-  return send_command(command);
+  return send_command({{"command", "get_config"}});
 }
 
 auto DvlA50Driver::trigger_ping() -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "trigger_ping"}};
-  return send_command(command);
+  return send_command({{"command", "trigger_ping"}});
 }
 
 auto DvlA50Driver::calibrate_gyro() -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "calibrate_gyro"}};
-  return send_command(command);
+  return send_command({{"command", "calibrate_gyro"}});
 }
 
 auto DvlA50Driver::reset_dead_reckoning() -> std::future<CommandResponse>
 {
-  const nlohmann::json command = {{"command", "reset_dead_reckoning"}};
-  return send_command(command);
+  return send_command({{"command", "reset_dead_reckoning"}});
 }
 
-auto DvlA50Driver::register_velocity_report_callback(std::function<void(const VelocityReport &)> && callback) -> void
+auto DvlA50Driver::register_callback(std::function<void(const VelocityReport &)> && callback) -> void
 {
   velocity_report_callbacks_.emplace_back(std::move(callback));
 }
 
-auto DvlA50Driver::register_dead_reckoning_report_callback(std::function<void(const DeadReckoningReport &)> && callback)
-  -> void
+auto DvlA50Driver::register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void
 {
   dead_reckoning_report_callbacks_.emplace_back(std::move(callback));
+}
+
+auto DvlA50Driver::process_json_object(const nlohmann::json & json_object) -> void
+{
+  if (json_object.at("type") == "velocity") {
+    for (const auto & callback : velocity_report_callbacks_) {
+      callback(json_object.get<VelocityReport>());
+    }
+  } else if (json_object.at("type") == "position_local") {
+    for (const auto & callback : dead_reckoning_report_callbacks_) {
+      callback(json_object.get<DeadReckoningReport>());
+    }
+  } else if (json_object.at("type") == "response") {
+    const auto response = json_object.get<CommandResponse>();
+    if (pending_requests_.contains(response.response_to) && !pending_requests_[response.response_to].empty()) {
+      pending_requests_[response.response_to].front().set_value(response);
+      pending_requests_[response.response_to].pop_front();
+    }
+  }
+}
+
+auto DvlA50Driver::poll_connection() -> void
+{
+  // Maintain a queue to store incoming data
+  const std::size_t max_bytes_to_read = 1024;
+  std::deque<std::uint8_t> buffer(max_bytes_to_read);
+  std::size_t n_bytes_to_read = buffer.size();
+
+  while (running_.load()) {
+    if (read_from_socket(socket_, buffer, n_bytes_to_read) < 0) {
+      std::cout << "Failed to read from the DVL; the connection was likely lost.\n";
+    }
+
+    auto last_delim = std::ranges::find(buffer | std::views::reverse, protocol::DELIMITER);
+
+    if (last_delim != buffer.rend()) {
+      try {
+        if (const std::vector<nlohmann::json> json_objects = parse_bytes(buffer); !json_objects.empty()) {
+          for (const auto & report : json_objects) {
+            process_json_object(report);
+          }
+        };
+
+        buffer.erase(buffer.begin(), last_delim.base());
+      }
+      catch (const std::exception & e) {
+        std::cout << "An error occurred while attempting to decode a DVL message: " << e.what() << "\n";
+        buffer.clear();
+      }
+    }
+
+    n_bytes_to_read = max_bytes_to_read - buffer.size();
+  }
 }
 
 }  // namespace libdvla50
