@@ -25,7 +25,11 @@ Using this template is as easy as 1, 2, 3...
 
 1. Use this repository [as a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
 for your project
+<<<<<<< HEAD
 2. Replace all instances of "ros2-template" with your own project's name
+=======
+2. Replace all instances of "libwaterlinked" with your own project's name
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
 3. Replace the source code with your own project!
 
 Feel free to remove any unused configurations/pipelines and to adjust things as
@@ -34,5 +38,9 @@ you see fit for your project!
 ## Getting help
 
 If you have questions regarding usage of this project or would like to
+<<<<<<< HEAD
 contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/ros2-template/discussions)
+=======
+contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/discussions)
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
 board!

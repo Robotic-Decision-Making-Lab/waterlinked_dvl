@@ -2,9 +2,15 @@
   "name": "ROS 2 NVIDIA Dev Container",
   "dockerFile": "Dockerfile",
   "context": "../..",
+<<<<<<< HEAD
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ros/ws_ros/src/ros2-template,type=bind",
   "workspaceFolder": "/home/ros/ws_ros/src/ros2-template",
   "remoteUser": "ros",
+=======
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/libwaterlinked,type=bind",
+  "workspaceFolder": "/home/ubuntu/ws_ros/src/libwaterlinked",
+  "remoteUser": "ubuntu",
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
   "runArgs": [
     "--network=host",
     "--cap-add=SYS_PTRACE",

@@ -104,6 +104,10 @@
     "/opt/ros/iron/local/lib/python3.10/dist-packages/",
     "${workspaceFolder}/install/"
   ],
+<<<<<<< HEAD
+=======
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/libwaterlinked/bin/python",
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
   "C_Cpp.clang_format_fallbackStyle": "Google",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,

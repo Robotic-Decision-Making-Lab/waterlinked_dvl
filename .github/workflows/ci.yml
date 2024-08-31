@@ -37,7 +37,11 @@ jobs:
       - name: Run ROS Industrial CI
         uses: ros-industrial/industrial_ci@master
         env:
+<<<<<<< HEAD
           DOCKER_IMAGE: ghcr.io/robotic-decision-making-lab/ros2-template:${{ matrix.env.IMAGE }}
+=======
+          DOCKER_IMAGE: ghcr.io/robotic-decision-making-lab/libwaterlinked:${{ matrix.env.IMAGE }}
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
           CXXFLAGS: >-
             -Wall -Wextra -Wpedantic -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls
           CC: ${{ env.CLANG_TIDY && 'clang' }}
