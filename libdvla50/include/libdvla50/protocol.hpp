@@ -88,10 +88,10 @@ struct VelocityReport
   std::uint8_t status;
 
   /// Timestamp of the surface reflection, aka 'center of ping' (Unix timestamp in microseconds)
-  std::chrono::time_point<std::chrono::system_clock> time_of_validity;
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> time_of_validity;
 
   /// Timestamp from immediately before sending of the report over TCP (Unix timestamp in microseconds)
-  std::chrono::time_point<std::chrono::system_clock> time_of_transmission;
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> time_of_transmission;
 };
 
 /// A dead reckoning report outputs the current speed, position, and orientation of the DVL as calculated by dead
@@ -100,7 +100,7 @@ struct VelocityReport
 struct DeadReckoningReport
 {
   /// Timestamp of report (Unix timestamp in seconds)
-  std::chrono::time_point<std::chrono::system_clock> ts;
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds> ts;
 
   /// Distance in X direction (m)
   double x;
@@ -157,7 +157,6 @@ struct Configuration
 struct CommandResponse
 {
   /// The name of the command that this is a response to.
-  // TODO(evan-palmer): Decide whether or not we need to keep this.
   std::string response_to;
 
   /// Whether or not the command was successful.
@@ -170,4 +169,45 @@ struct CommandResponse
   nlohmann::json result;
 };
 
+auto from_json(const nlohmann::json & j, TransducerReport & r) -> void;
+
+auto from_json(const nlohmann::json & j, VelocityReport & r) -> void;
+
+auto from_json(const nlohmann::json & j, DeadReckoningReport & r) -> void;
+
+auto from_json(const nlohmann::json & j, Configuration & r) -> void;
+
+auto from_json(const nlohmann::json & j, CommandResponse & r) -> void;
+
+namespace protocol
+{
+
+/// Message delimiter used by the DVL
+const char DELIMITER = '\n';
+
+}  // namespace protocol
+
 }  // namespace libdvla50
+
+namespace nlohmann
+{
+
+template <typename Clock, typename Duration>
+struct adl_serializer<std::chrono::time_point<Clock, Duration>>
+{
+  static void from_json(const json & j, std::chrono::time_point<Clock, Duration> & tp)
+  {
+    tp = std::chrono::time_point<Clock, Duration>(Duration(j.get<std::int64_t>()));
+  }
+};
+
+template <typename Rep, typename Period>
+struct adl_serializer<std::chrono::duration<Rep, Period>>
+{
+  static void from_json(const json & j, std::chrono::duration<Rep, Period> & d)
+  {
+    d = std::chrono::duration<Rep, Period>(j.get<Rep>());
+  }
+};
+
+}  // namespace nlohmann

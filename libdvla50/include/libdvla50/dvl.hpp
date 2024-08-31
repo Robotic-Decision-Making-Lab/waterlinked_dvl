@@ -105,17 +105,20 @@ public:
   auto reset_dead_reckoning() -> std::future<CommandResponse>;
 
   /// Register a callback to receive the velocity report.
-  auto register_velocity_report_callback(std::function<void(const VelocityReport &)> && callback) -> void;
+  auto register_callback(std::function<void(const VelocityReport &)> && callback) -> void;
 
   /// Register a callback to receive the dead reckoning report.
-  auto register_dead_reckoning_report_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void;
+  auto register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void;
 
 private:
   /// Send a command to the DVL.
   auto send_command(const nlohmann::json & command) -> std::future<CommandResponse>;
 
   /// Poll the connection for new data.
-  auto poll_connection(std::size_t max_bytes_to_read) -> void;
+  auto poll_connection() -> void;
+
+  /// Process a vector of JSON objects by triggering callbacks and resolving promises.
+  auto process_json_object(const nlohmann::json & json_object) -> void;
 
   int socket_;
 
