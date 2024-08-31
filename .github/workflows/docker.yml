@@ -16,7 +16,11 @@ on:
   workflow_dispatch:
 
 env:
+<<<<<<< HEAD
   PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/ros2-template') }}
+=======
+  PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/libwaterlinked') }}
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
 
 jobs:
   ci:

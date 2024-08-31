@@ -2,8 +2,13 @@
   "name": "ROS 2 Dev Container",
   "dockerFile": "Dockerfile",
   "context": "../..",
+<<<<<<< HEAD
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/ros2-template,type=bind",
   "workspaceFolder": "/home/ubuntu/ws_ros/src/ros2-template",
+=======
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/libwaterlinked,type=bind",
+  "workspaceFolder": "/home/ubuntu/ws_ros/src/libwaterlinked",
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
   "remoteUser": "ubuntu",
   "runArgs": [
     "--network=host",

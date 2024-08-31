@@ -10,7 +10,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
 # Update to be your project's name
+<<<<<<< HEAD
 ENV PROJECT_NAME=ros2-template
+=======
+ENV PROJECT_NAME=libwaterlinked
+>>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
 
 COPY . src/$PROJECT_NAME
 
