@@ -44,6 +44,19 @@ install(
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+if(BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    find_package(ament_cmake_gmock REQUIRED)
+
+    ament_add_gtest(test_json test/test_json.cpp)
+    target_link_libraries(
+        test_json
+        libwaterlinked
+        nlohmann_json::nlohmann_json
+        Eigen3::Eigen
+    )
+endif()
+
 ament_export_targets(libwaterlinkedTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(nlohmann_json Eigen3)
 
