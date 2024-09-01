@@ -1,38 +1,42 @@
-# ROS 2 Project Template
+# libwaterlinked
 
-Setting up a new ROS 2 project often requires a significant amount of
-preparation and boilerplate configuration, costing you valuable robot
-development time 🤖. Recognizing this, we have put together this template
-repository configured with a ROS 2 development environment, continuous
-integration, and more. This project is the result of much trial and error
-across many projects, and we hope that this helps you save some effort in
-setting up your own projects.
+libwaterlinked is a C++ library with accompanying ROS 2 nodes designed to
+interface with [Water Linked DVL devices](https://waterlinked.com/dvl), including
+the DVL-A50 and DVL-A125. Get started with libwaterlinked by installing the
+project or by exploring the implemented [examples](https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/tree/main/examples).
 
-## Features
+> :warning: This project is not affiliated with or maintained by Water Linked.
+> Please refer to the Water Linked [GitHub Organization](https://github.com/waterlinked/)
+> for all official software.
 
-The main features of this template are:
+## Installation
 
-- A development environment for Visual Studio Code including a [development container](https://code.visualstudio.com/docs/devcontainers/containers)
-and configurations for linting and auto-formatting your code
-- Docker images that support deployment to a variety of systems (e.g., arm64
-systems)
-- Continuous integration and deployment pipelines using GitHub Actions
-- GitHub Issue and Pull Request templates
+To install libwaterlinked, first clone the repository to the `src/` directory
+of your ROS 2 workspace
 
-## Quick start
+```bash
+git clone -b ros2 git@github.com:Robotic-Decision-Making-Lab/libwaterlinked.git
+```
 
-Using this template is as easy as 1, 2, 3...
+Then install the project dependencies using vcstool and rosdep
 
-1. Use this repository [as a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
-for your project
-2. Replace all instances of "libwaterlinked" with your own project's name
-3. Replace the source code with your own project!
+```bash
+vcs import src < src/libwaterlinked/ros2.repos && \
+rosdep install --from paths src -y --ignore-src
+```
 
-Feel free to remove any unused configurations/pipelines and to adjust things as
-you see fit for your project!
+Finally, build the workspace using colcon
+
+```bash
+colcon build
+```
 
 ## Getting help
 
-If you have questions regarding usage of this project or would like to
-contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/discussions)
-board!
+If you have questions regarding usage of libreach or regarding contributing to
+this project, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/discussions)
+board.
+
+## License
+
+libwaterlinked is released under the MIT license.
