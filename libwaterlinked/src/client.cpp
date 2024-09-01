@@ -204,6 +204,8 @@ auto WaterLinkedClient::register_callback(std::function<void(const DeadReckoning
 
 auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) -> void
 {
+  // There are only three types of messages sent by the DVL: velocity reports, dead reckoning reports, and command
+  // responses.
   if (json_object.at("type") == "velocity") {
     for (const auto & callback : velocity_report_callbacks_) {
       callback(json_object.get<VelocityReport>());
@@ -218,6 +220,8 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
       pending_requests_[response.response_to].front().set_value(response);
       pending_requests_[response.response_to].pop_front();
     }
+  } else {
+    throw std::runtime_error("Received an unknown message type from the DVL: " + json_object.dump());
   }
 }
 

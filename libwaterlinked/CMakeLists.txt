@@ -33,6 +33,21 @@ target_link_libraries(
 )
 set_target_properties(libwaterlinked PROPERTIES PREFIX "")
 
+set(EXAMPLES
+    send_command
+    subscribe_to_reports
+)
+
+foreach(example IN ITEMS ${EXAMPLES})
+    add_executable(${example} examples/${example}.cpp)
+    add_dependencies(${example} libwaterlinked)
+    target_link_libraries(${example} PUBLIC libwaterlinked PRIVATE nlohmann_json::nlohmann_json Eigen3::Eigen)
+    set_target_properties(
+        ${example}
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/examples
+    )
+endforeach()
+
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
