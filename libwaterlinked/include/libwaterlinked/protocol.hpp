@@ -30,22 +30,22 @@ namespace waterlinked
 
 struct TransducerReport
 {
-  // ID of the transducer
+  // ID of the transducer.
   std::uint8_t id;
 
-  // Measured velocity (m/s)
+  // Measured velocity (m/s).
   double velocity;
 
-  // Measured distance (m)
+  // Measured distance (m).
   double distance;
 
-  // Transducer signal strength (dBm)
+  // Transducer signal strength (dBm).
   double rssi;
 
-  // Noise spectral density (dBm)
+  // Noise spectral density (dBm).
   double nsd;
 
-  // Whether or not the transducer beam is valid
+  // Whether or not the transducer beam is valid.
   bool beam_valid;
 };
 
@@ -56,41 +56,41 @@ struct TransducerReport
 /// vehicle at an angle, specified as a 'mounting rotation offset', from the forward axis of the vehicle.
 struct VelocityReport
 {
-  /// Milliseconds since last velocity report (ms)
+  /// Milliseconds since last velocity report (ms).
   std::chrono::milliseconds time;
 
-  /// Velocity in the x direction (m/s)
+  /// Velocity in the x direction (m/s).
   double vx;
 
-  /// Velocity in the y direction (m/s)
+  /// Velocity in the y direction (m/s).
   double vy;
 
-  /// Velocity in the z direction (m/s)
+  /// Velocity in the z direction (m/s).
   double vz;
 
-  /// Figure of merit, a measure of the accuracy of the velocities (m/s)
+  /// Figure of merit, a measure of the accuracy of the velocities (m/s).
   double fom;
 
-  /// Covariance matrix for the velocities. The figure of merit is calculated from this (entries in (m/s)^2)
+  /// Covariance matrix for the velocities. The figure of merit is calculated from this (entries in (m/s)^2).
   Eigen::Matrix3d covariance;
 
-  /// Distance to the reflecting surface along the Z axis (m)
+  /// Distance to the reflecting surface along the Z axis (m).
   double altitude;
 
-  /// Transducer reports
+  /// Transducer reports.
   std::vector<TransducerReport> transducers;
 
-  /// If true, the DVL has a lock on the reflecting surface, and the altitude and velocities are valid (True/False)
+  /// If true, the DVL has a lock on the reflecting surface, and the altitude and velocities are valid (True/False).
   bool velocity_valid;
 
   /// 8 bit status mask. Bit 0 is set to 1 for high temperature and DVL will soon enter thermal shutdown. Remaining bits
   /// are reserved for future use.
   std::uint8_t status;
 
-  /// Timestamp of the surface reflection, aka 'center of ping' (Unix timestamp in microseconds)
+  /// Timestamp of the surface reflection, aka 'center of ping' (Unix timestamp in microseconds).
   std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> time_of_validity;
 
-  /// Timestamp from immediately before sending of the report over TCP (Unix timestamp in microseconds)
+  /// Timestamp from immediately before sending of the report over TCP (Unix timestamp in microseconds).
   std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> time_of_transmission;
 };
 
@@ -99,31 +99,31 @@ struct VelocityReport
 /// rotation offset is set, at the start of the dead reckoning run. The expected update rate is 5 Hz.
 struct DeadReckoningReport
 {
-  /// Timestamp of report (Unix timestamp in seconds)
-  std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds> ts;
+  /// Timestamp of report (Unix timestamp in microseconds).
+  std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds> ts;
 
-  /// Distance in X direction (m)
+  /// Distance in X direction (m).
   double x;
 
-  /// Distance in Y direction (m)
+  /// Distance in Y direction (m).
   double y;
 
-  /// Distance in downward direction (m)
+  /// Distance in downward direction (m).
   double z;
 
-  /// Standard deviation (figure of merit) for position (m)
+  /// Standard deviation (figure of merit) for position (m).
   double std;
 
-  /// Rotation around X axis (degrees)
+  /// Rotation around X axis (degrees).
   float roll;
 
-  /// Rotation around Y axis (degrees)
+  /// Rotation around Y axis (degrees).
   float pitch;
 
-  /// Rotation around Z axis, i.e. heading (degrees)
+  /// Rotation around Z axis, i.e. heading (degrees).
   float yaw;
 
-  /// Reports if there are any issues with the DVL (0 if no errors, 1 otherwise)
+  /// Reports if there are any issues with the DVL (0 if no errors, 1 otherwise).
   std::uint8_t status;
 };
 
@@ -182,7 +182,7 @@ auto from_json(const nlohmann::json & j, CommandResponse & r) -> void;
 namespace protocol
 {
 
-/// Message delimiter used by the DVL
+/// Message delimiter used by the DVL.
 const char DELIMITER = '\n';
 
 }  // namespace protocol
@@ -197,7 +197,8 @@ struct adl_serializer<std::chrono::time_point<Clock, Duration>>
 {
   static void from_json(const json & j, std::chrono::time_point<Clock, Duration> & tp)
   {
-    tp = std::chrono::time_point<Clock, Duration>(Duration(j.get<std::int64_t>()));
+    tp = std::chrono::time_point<Clock, Duration>(
+      std::chrono::duration_cast<Duration>(std::chrono::duration<double>(j.get<double>())));
   }
 };
 

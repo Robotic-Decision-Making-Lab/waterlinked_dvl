@@ -30,8 +30,6 @@
 
 #include "libwaterlinked/protocol.hpp"
 
-// TEST
-
 namespace waterlinked
 {
 
@@ -144,12 +142,12 @@ auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::fut
   return future;
 }
 
-auto WaterLinkedClient::set_speed_of_sound(int speed_of_sound) -> std::future<CommandResponse>
+auto WaterLinkedClient::set_speed_of_sound(std::uint16_t speed_of_sound) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"speed_of_sound", speed_of_sound}}}});
 }
 
-auto WaterLinkedClient::set_mounting_rotation_offset(int degrees) -> std::future<CommandResponse>
+auto WaterLinkedClient::set_mounting_rotation_offset(std::uint16_t degrees) -> std::future<CommandResponse>
 {
   return send_command({{"command", "set_config"}, {"parameters", {{"mounting_rotation_offset", degrees}}}});
 }
