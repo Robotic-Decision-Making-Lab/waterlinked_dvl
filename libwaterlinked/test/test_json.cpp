@@ -29,7 +29,7 @@
 namespace waterlinked::test
 {
 
-/// Reports used have been retrieved from the Waterlinked API documentation:
+/// Reports used for testing have been retrieved from the Waterlinked API documentation:
 /// https://waterlinked.github.io/dvl/dvl-protocol
 
 TEST(JsonParsing, ParsesTransducerReport)
@@ -138,30 +138,6 @@ TEST(JsonParsing, ParseCommandResponse)
   EXPECT_EQ(response.error_message, "");
   EXPECT_NO_THROW(response.result.get<Configuration>());
 }
-
-/*
- * One box of lasagna noodles - usually 12/13 noodles (makes two batches of lasagna) - 9 noodles per lasagna
- * one jar of pasta sauce
- * 1 container riccotta cheese (15 oz)
- * 1 bag mozerella cheese (16 oz)
- * 1 lb ground beef
- * 1 qaurter onion
- *
- * 1. Boil noodles
- * 2. Brown beef and onion
- * 3. Mix pasta sauce with beef and onion
- * 3. Grease pan
- * 4. layer 3 noodles on the bottom
- * 5. Add sauce on each layer of noodles
- * 6. Add half of riccotta cheese on sauce
- * 7. Sprinkle mozerella on that
- * 8. 3 more noodles
- * 9. Sauce, riccotta, mozzerella
- * 10. 3 more noodles
- * 11. Rest of sauce
- * 12. Rest of mozzerella
- * 13. Bake at 350 for 45 minutes with foil on top
- */
 
 TEST(JsonParsing, ParseVelocityReport)
 {

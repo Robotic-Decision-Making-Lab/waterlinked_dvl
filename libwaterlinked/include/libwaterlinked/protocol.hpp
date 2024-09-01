@@ -127,6 +127,7 @@ struct DeadReckoningReport
   std::uint8_t status;
 };
 
+/// DVL configurations.
 struct Configuration
 {
   /// Speed of sound (1000-2000 m/s).
@@ -166,8 +167,30 @@ struct CommandResponse
   std::string error_message;
 
   /// The result of the command, if any.
+  /// The primary scenario in which a result is returned is when a command is sent to get the current configuration.
   nlohmann::json result;
 };
+
+/**
+ * The below `from_json` functions are used to parse JSON objects into the corresponding C++ objects. They should NOT be
+ * called directly. Rather, you should use the json API, as done in the following example:
+ *
+ * ```
+ * const std::string json_string = R"(
+ *  {
+ *    "speed_of_sound":1475.00,
+ *    "acoustic_enabled":true,
+ *    "dark_mode_enabled":false,
+ *    "mounting_rotation_offset":20.00,
+ *    "range_mode":"auto",
+ *    "periodic_cycling_enabled":true
+ *  }
+ * )";
+ *
+ * const auto obj = nlohmann::json::parse(json_string);
+ * const auto configuration = obj.get<Configuration>();
+ * ```
+ */
 
 auto from_json(const nlohmann::json & j, TransducerReport & r) -> void;
 
@@ -197,8 +220,7 @@ struct adl_serializer<std::chrono::time_point<Clock, Duration>>
 {
   static void from_json(const json & j, std::chrono::time_point<Clock, Duration> & tp)
   {
-    tp = std::chrono::time_point<Clock, Duration>(
-      std::chrono::duration_cast<Duration>(std::chrono::duration<double>(j.get<double>())));
+    tp = std::chrono::time_point<Clock, Duration>(Duration(j));
   }
 };
 
