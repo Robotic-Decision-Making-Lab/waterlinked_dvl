@@ -37,7 +37,7 @@ auto from_json(const nlohmann::json & j, Configuration & r) -> void
 {
   j.at("speed_of_sound").get_to(r.speed_of_sound);
   j.at("mounting_rotation_offset").get_to(r.mounting_rotation_offset);
-  j.at("acoustics_enabled").get_to(r.acoustic_enabled);
+  j.at("acoustic_enabled").get_to(r.acoustic_enabled);
   j.at("dark_mode_enabled").get_to(r.dark_mode_enabled);
   j.at("range_mode").get_to(r.range_mode);
   j.at("periodic_cycling_enabled").get_to(r.periodic_cycling_enabled);
