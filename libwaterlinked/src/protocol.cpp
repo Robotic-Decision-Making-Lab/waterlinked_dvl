@@ -53,7 +53,12 @@ auto from_json(const nlohmann::json & j, CommandResponse & r) -> void
 
 auto from_json(const nlohmann::json & j, DeadReckoningReport & r) -> void
 {
-  j.at("ts").get_to(r.ts);
+  // WaterLinked doesn't use consistent timestamps across reports, so we need to handle this manually
+  // Start by getting the ts in seconds as a double to preserve the fractional component, then convert to microseconds.
+  auto ts = std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds>(
+    std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(j.at("ts").get<double>())));
+
+  r.ts = ts;
   j.at("x").get_to(r.x);
   j.at("y").get_to(r.y);
   j.at("z").get_to(r.z);
