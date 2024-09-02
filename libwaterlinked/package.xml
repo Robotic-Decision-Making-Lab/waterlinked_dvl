@@ -4,7 +4,7 @@
 
   <name>libwaterlinked</name>
   <version>0.0.1</version>
-  <description>C++ library used to interact with WaterLinked DVL devices</description>
+  <description>C++ library used to interact with Water Linked DVL devices</description>
 
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
   <license>MIT</license>

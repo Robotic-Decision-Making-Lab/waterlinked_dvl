@@ -4,3 +4,5 @@
 # Except the following
 !requirements-dev.txt
 !ros2.repos
+!waterlinked_driver
+!libwaterlinked
