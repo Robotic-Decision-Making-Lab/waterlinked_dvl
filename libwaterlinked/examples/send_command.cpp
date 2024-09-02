@@ -27,7 +27,8 @@
 
 auto main() -> int
 {
-  // Create a new client using the default IP address (192.168.194.95) and port (16171) with a 5 second session timeout.
+  // Create a new client using the default IP address (192.168.194.95) and port (16171) with a 5 second session
+  // timeout.
   waterlinked::WaterLinkedClient client("192.168.194.95", 16171, std::chrono::seconds(5));
 
   // Get the current configuration of the DVL

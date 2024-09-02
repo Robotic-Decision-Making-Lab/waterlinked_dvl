@@ -1,4 +1,13 @@
 # ROS 2
+<<<<<<< HEAD
 build
 install
 log
+=======
+build/
+install/
+log/
+
+# virtualenv
+.venv
+>>>>>>> 1f14078 (why tf does colcon not support fetchcontent)
