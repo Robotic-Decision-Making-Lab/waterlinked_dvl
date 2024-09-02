@@ -138,7 +138,7 @@ struct Configuration
   /// protocol documentation for further information.
   std::uint16_t mounting_rotation_offset;
 
-  /// true for normal operation of the DVL,false when the sending of acoustic waves from the DVL is disabled (e.g. to
+  /// true for normal operation of the DVL, false when the sending of acoustic waves from the DVL is disabled (e.g. to
   /// save power or slow down its heating up in air).
   bool acoustic_enabled;
 

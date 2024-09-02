@@ -3,7 +3,7 @@ project(
     libwaterlinked
     VERSION 0.0.1
     LANGUAGES CXX
-    DESCRIPTION "C++ library used to interact with the WaterLinked DVL devices"
+    DESCRIPTION "C++ library used to interact with the Water Linked DVL devices"
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
