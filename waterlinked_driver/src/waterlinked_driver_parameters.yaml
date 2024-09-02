@@ -1,0 +1,64 @@
+waterlinked_driver:
+  ip_address:
+    type: string
+    default_value: "192.168.194.95"
+    description: "The IP address of the DVL."
+    read_only: true
+
+  port:
+    type: int
+    default_value: 16171
+    description: "The DVL TCP port."
+    read_only: true
+
+  timeout:
+    type: int
+    default_value: 5
+    description: "The timeout for the DVL connection (s)."
+    read_only: true
+
+  frame_id:
+    type: string
+    default_value: "dvl_link"
+    description: "The frame ID of the DVL."
+    read_only: true
+
+  speed_of_sound:
+    type: double
+    default_value: 1500.0
+    description: "The speed of sound in water (m/s)."
+    read_only: true
+    validation:
+      bounds<>: [1000.0 2000.0]
+
+  mounting_rotation_offset:
+    type: double
+    default_value: 0.0
+    description: "The mounting rotation offset of the DVL (degrees)."
+    read_only: true
+    validation:
+      bounds<>: [0.0 360.0]
+
+  acoustic_enabled:
+    type: bool
+    default_value: true
+    description: "Whether or not the acoustic waves are enabled."
+    read_only: true
+
+  dark_mode_enabled:
+    type: bool
+    default_value: false
+    description: "Whether or not dark mode is enabled."
+    read_only: true
+
+  range_mode:
+    type: string
+    default_value: "auto"
+    description: "The range mode of the DVL."
+    read_only: true
+
+  periodic_cycling_enabled:
+    type: bool
+    default_value: true
+    description: "Whether or not periodic cycling is enabled."
+    read_only: true
