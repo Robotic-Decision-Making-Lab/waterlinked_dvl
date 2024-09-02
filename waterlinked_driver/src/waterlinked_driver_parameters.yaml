@@ -29,7 +29,7 @@ waterlinked_driver:
     description: "The speed of sound in water (m/s)."
     read_only: true
     validation:
-      bounds<>: [1000.0 2000.0]
+      bounds<>: [1000.0, 2000.0]
 
   mounting_rotation_offset:
     type: double
@@ -37,7 +37,7 @@ waterlinked_driver:
     description: "The mounting rotation offset of the DVL (degrees)."
     read_only: true
     validation:
-      bounds<>: [0.0 360.0]
+      bounds<>: [0.0, 360.0]
 
   acoustic_enabled:
     type: bool

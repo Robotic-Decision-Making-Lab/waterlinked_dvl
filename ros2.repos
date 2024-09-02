@@ -1,4 +1,3 @@
-# Add external repositories that your project depends on here. For example,
 repositories:
 
   json:
