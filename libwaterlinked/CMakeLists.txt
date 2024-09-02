@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.24)
 project(
     libwaterlinked
     VERSION 0.0.1
@@ -13,8 +13,8 @@ endif()
 include(GNUInstallDirs)
 
 find_package(ament_cmake REQUIRED)
-find_package(nlohmann_json REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_library(libwaterlinked SHARED)
 target_sources(libwaterlinked PRIVATE src/client.cpp src/protocol.cpp)
@@ -29,7 +29,7 @@ target_include_directories(
 target_compile_features(libwaterlinked PUBLIC cxx_std_20)
 target_link_libraries(
     libwaterlinked
-    PRIVATE nlohmann_json::nlohmann_json Eigen3::Eigen
+    PUBLIC Eigen3::Eigen nlohmann_json::nlohmann_json
 )
 set_target_properties(libwaterlinked PROPERTIES PREFIX "")
 
@@ -74,6 +74,6 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_targets(libwaterlinkedTargets HAS_LIBRARY_TARGET)
-ament_export_dependencies(nlohmann_json Eigen3)
+ament_export_dependencies(Eigen3 nlohmann_json)
 
 ament_package()

@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+#include "libwaterlinked/client.hpp"
 #include "marine_acoustic_msgs/msg/dvl.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -42,15 +43,15 @@ class WaterLinkedDriver : public rclcpp_lifecycle::LifecycleNode
 public:
   WaterLinkedDriver();
 
-  auto on_configure(const rclcpp_lifecycle::State & previous_state) override -> CallbackReturn;
+  auto on_configure(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
-  auto on_activate(const rclcpp_lifecycle::State & previous_state) override -> CallbackReturn;
+  auto on_activate(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
-  auto on_deactivate(const rclcpp_lifecycle::State & previous_state) override -> CallbackReturn;
+  auto on_deactivate(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
-  auto on_cleanup(const rclcpp_lifecycle::State & previous_state) override -> CallbackReturn;
+  auto on_cleanup(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
-  auto on_shutdown(const rclcpp_lifecycle::State & previous_state) override -> CallbackReturn;
+  auto on_shutdown(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
 private:
   std::unique_ptr<waterlinked::WaterLinkedClient> client_;
