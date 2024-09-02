@@ -17,3 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+#include "waterlinked_driver/waterlinked_driver.hpp"
+
+namespace waterlinked
+{
+}  // namespace waterlinked

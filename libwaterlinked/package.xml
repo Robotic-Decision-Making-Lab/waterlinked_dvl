@@ -18,6 +18,7 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>eigen</depend>
+  <depend>nlohmann_json</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
