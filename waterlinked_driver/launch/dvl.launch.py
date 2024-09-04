@@ -18,6 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, EmitEvent, RegisterEventHandler
 from launch.events import matches_action
@@ -29,8 +32,13 @@ from lifecycle_msgs.msg import Transition
 
 
 def generate_launch_description():
-    declare_parameters_file = DeclareLaunchArgument("parameters_file", default_value="")
     declare_ns = DeclareLaunchArgument("ns", default_value="")
+    declare_parameters_file = DeclareLaunchArgument(
+        "parameters_file",
+        default_value=os.path.join(
+            get_package_share_directory("waterlinked_driver"), "config", "dvl.yaml"
+        ),
+    )
 
     waterlinked_driver_node = LifecycleNode(
         package="waterlinked_driver",
