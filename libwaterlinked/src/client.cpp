@@ -22,6 +22,7 @@
 
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <sys/select.h>
 #include <unistd.h>
 
@@ -82,24 +83,81 @@ auto parse_bytes(const std::deque<std::uint8_t> & buffer) -> std::vector<nlohman
   return json_objects;
 }
 
+/// Establish a connection to a socket with a timeout. Returns 0 on success, -1 on failure.
+auto connect(int socket, const struct sockaddr * addr, socklen_t addrlen, std::chrono::seconds timeout) -> int
+{
+  auto set_socket_flags = [](int socket, int flags) -> int { return fcntl(socket, F_SETFL, flags); };
+
+  const int flags = fcntl(socket, F_GETFL, 0);
+  if (flags < 0) {
+    return -1;
+  }
+
+  // Set the socket to non-blocking mode so that we can create a timeout on the connection attempt
+  if (set_socket_flags(socket, flags | O_NONBLOCK) < 0) {
+    return -1;
+  }
+
+  auto deadline = std::chrono::steady_clock::now() + timeout;
+
+  // Attempt to establish a connection
+  int rc = ::connect(socket, addr, addrlen);
+
+  if (rc < 0) {
+    if (errno != EINPROGRESS && errno != EWOULDBLOCK) {
+      set_socket_flags(socket, flags);
+      return rc;
+    }
+
+    do {
+      const int remaining_time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now()).count();
+
+      if (remaining_time <= 0) {
+        rc = 0;
+        break;
+      }
+
+      struct pollfd pfds[] = {{.fd = socket, .events = POLLOUT, .revents = 0}};  // NOLINT
+      rc = poll(pfds, 1, remaining_time);
+
+      // Verify that the poll was *actually* successful
+      // See: https://stackoverflow.com/questions/2597608/c-socket-connection-timeout
+      if (rc > 0) {
+        int error = 0;
+        socklen_t error_len = sizeof(error);
+
+        if (getsockopt(socket, SOL_SOCKET, SO_ERROR, &error, &error_len) < 0) {
+          rc = -1;
+        } else {
+          errno = error;
+        }
+      }
+    } while (rc == -1 && errno == EINTR);
+
+    // A timeout occurred
+    if (rc == 0) {
+      errno = ETIMEDOUT;
+      set_socket_flags(socket, flags);
+      return -1;
+    }
+  }
+
+  // Restore the original socket flags
+  return set_socket_flags(socket, flags) < 0 ? -1 : rc;
+}
+
 }  // namespace
 
-WaterLinkedClient::WaterLinkedClient(const std::string & addr, std::uint16_t port, std::chrono::seconds session_timeout)
+WaterLinkedClient::WaterLinkedClient(
+  const std::string & addr,
+  std::uint16_t port,
+  std::chrono::seconds connection_timeout)
 {
   // Open a TCP socket and connect to the DVL
   socket_ = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_ < 0) {
     throw std::runtime_error("Failed to open TCP socket");
-  }
-
-  const int flags = fcntl(socket_, F_GETFL, 0);
-  if (flags < 0) {
-    throw std::runtime_error("Failed to get socket flags");
-  }
-
-  // Set the socket to non-blocking mode so that we create a timeout on the connection attempt
-  if (fcntl(socket_, F_SETFL, flags | O_NONBLOCK) < 0) {
-    throw std::runtime_error("Failed to set socket to non-blocking mode");
   }
 
   struct sockaddr_in sockaddr;
@@ -112,33 +170,9 @@ WaterLinkedClient::WaterLinkedClient(const std::string & addr, std::uint16_t por
     throw std::runtime_error("Invalid socket address " + addr);
   }
 
-  // Inspired by the following Stack Overflow post:
-  // https://stackoverflow.com/a/61960339
-  if (connect(socket_, reinterpret_cast<struct sockaddr *>(&sockaddr), sizeof(sockaddr)) < 0) {
-    if (errno != EINPROGRESS && errno != EWOULDBLOCK) {
-      throw std::runtime_error("Failed to connect to TCP socket");
-    }
-
-    struct timespec start_t;
-    if (clock_gettime(CLOCK_MONOTONIC, &start_t) < 0) {
-      throw std::runtime_error("Failed to get current time when starting connection timeout");
-    }
-
-    // TODO(evan): finish this! then it's done!
-  }
-
-  // Restore the original flags
-  if (fcntl(socket_, F_SETFL, flags) < 0) {
-    throw std::runtime_error("Failed to set socket to blocking mode");
-  }
-
-  // Set the read timeout on the socket
-  struct timeval timeout;
-  timeout.tv_sec = session_timeout.count();
-  timeout.tv_usec = 0;
-
-  if (setsockopt(socket_, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-    throw std::runtime_error("Failed to set socket send timeout");
+  if (connect(socket_, reinterpret_cast<struct sockaddr *>(&sockaddr), sizeof(sockaddr), connection_timeout) < 0) {
+    throw std::runtime_error(
+      "An error occurred while attempting to connect to the DVL. Error: " + std::string(strerror(errno)));
   }
 
   running_.store(true);
@@ -158,11 +192,11 @@ WaterLinkedClient::~WaterLinkedClient()
 
 auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
 {
-  if (const std::string command_str{command.dump()}; send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
+  const std::string command_str{command.dump()};
+  if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
     throw std::runtime_error("Failed to send command to DVL");
   }
 
-  // The promise is non-copyable, so we get the future before moving the request onto the queue
   std::promise<CommandResponse> response;
   auto future = response.get_future();
 
@@ -278,7 +312,8 @@ auto WaterLinkedClient::poll_connection() -> void
 
     if (last_delim != buffer.rend()) {
       try {
-        if (const std::vector<nlohmann::json> json_objects = parse_bytes(buffer); !json_objects.empty()) {
+        const std::vector<nlohmann::json> json_objects = parse_bytes(buffer);
+        if (!json_objects.empty()) {
           for (const auto & report : json_objects) {
             process_json_object(report);
           }

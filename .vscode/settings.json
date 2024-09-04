@@ -7,15 +7,15 @@
     "*.rviz": "yaml",
     "*.config": "xml",
     "*.sdf": "xml",
-    "chrono": "cpp",
-    "cstdint": "cpp",
     "any": "cpp",
     "array": "cpp",
     "atomic": "cpp",
     "bit": "cpp",
     "*.tcc": "cpp",
+    "bitset": "cpp",
     "cctype": "cpp",
     "charconv": "cpp",
+    "chrono": "cpp",
     "clocale": "cpp",
     "cmath": "cpp",
     "codecvt": "cpp",
@@ -23,8 +23,10 @@
     "complex": "cpp",
     "concepts": "cpp",
     "condition_variable": "cpp",
+    "csignal": "cpp",
     "cstdarg": "cpp",
     "cstddef": "cpp",
+    "cstdint": "cpp",
     "cstdio": "cpp",
     "cstdlib": "cpp",
     "cstring": "cpp",
@@ -33,6 +35,7 @@
     "cwctype": "cpp",
     "deque": "cpp",
     "forward_list": "cpp",
+    "list": "cpp",
     "map": "cpp",
     "set": "cpp",
     "string": "cpp",
@@ -49,12 +52,15 @@
     "optional": "cpp",
     "random": "cpp",
     "ratio": "cpp",
+    "regex": "cpp",
     "string_view": "cpp",
     "system_error": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
     "utility": "cpp",
+    "hash_map": "cpp",
     "format": "cpp",
+    "fstream": "cpp",
     "future": "cpp",
     "initializer_list": "cpp",
     "iomanip": "cpp",
@@ -68,6 +74,7 @@
     "ostream": "cpp",
     "ranges": "cpp",
     "semaphore": "cpp",
+    "shared_mutex": "cpp",
     "span": "cpp",
     "sstream": "cpp",
     "stdexcept": "cpp",
@@ -105,10 +112,14 @@
     "${workspaceFolder}/install/"
   ],
 <<<<<<< HEAD
+<<<<<<< HEAD
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/ros2-template/bin/python",
 =======
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/libwaterlinked/bin/python",
 >>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
+=======
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/waterlinked_dvl/bin/python",
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
   "C_Cpp.clang_format_fallbackStyle": "Google",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
@@ -147,6 +158,9 @@
   "[markdown]": {
     "editor.rulers": [80],
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[yaml]": {
+    "editor.rulers": [80]
   },
   "search.exclude": {
     "**/build": true,

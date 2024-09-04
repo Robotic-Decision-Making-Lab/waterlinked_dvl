@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 FROM ghcr.io/robotic-decision-making-lab/ros2-template:jazzy-desktop
 =======
 FROM ghcr.io/robotic-decision-making-lab/libwaterlinked:rolling-desktop
 >>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
+=======
+FROM ghcr.io/robotic-decision-making-lab/waterlinked_dvl:rolling-desktop
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
 
 # Install ROS dependencies
 # This is done in a previous stage, but we include it again here in case anyone wants to

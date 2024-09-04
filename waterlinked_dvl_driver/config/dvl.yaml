@@ -1,4 +1,4 @@
-waterlinked_driver_node:
+waterlinked_dvl_driver_node:
   ros__parameters:
     # Descriptions for all DVL configurations can be found on the Water Linked
     # Documentation: https://waterlinked.github.io/dvl/dvl-protocol/
