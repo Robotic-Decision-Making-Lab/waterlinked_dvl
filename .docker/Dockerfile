@@ -80,11 +80,23 @@ WORKDIR $USER_WORKSPACE
 
 COPY --chown=$USER_UID:$USER_GID . src/$PROJECT_NAME
 
+<<<<<<< HEAD
 # Uncomment to download and install external repos used by the project
 RUN vcs import src < src/$PROJECT_NAME/ros2.repos
+=======
+# Create a new virtual environment for Python
+ENV VIRTUAL_ENV=$USER_WORKSPACE/.venv/$PROJECT_NAME
+RUN python3 -m venv --system-site-packages $VIRTUAL_ENV \
+    && echo "source ${VIRTUAL_ENV}/bin/activate" >> /home/$USERNAME/.bashrc \
+    && touch .venv/COLCON_IGNORE \
+    && echo "\n# Ensure colcon is run in the venv\nalias colcon='python3 -m colcon'" >> /home/$USERNAME/.bashrc
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+>>>>>>> 7ce605e (testing)
 
 # Install all ROS dependencies
+RUN vcs import src < src/$PROJECT_NAME/ros2.repos
 WORKDIR $USER_WORKSPACE
+<<<<<<< HEAD
 RUN sudo apt-get -q update \
     && sudo apt-get -q -y upgrade \
     && rosdep update \
@@ -92,10 +104,20 @@ RUN sudo apt-get -q update \
     && sudo apt-get autoremove -y \
     && sudo apt-get clean -y \
     && sudo rm -rf /var/lib/apt/lists/*
+=======
+# Skip for now while i fix
+# RUN sudo apt-get -q update \
+#     && sudo apt-get -q -y upgrade \
+#     && rosdep update \
+#     && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} \
+#     && sudo apt-get autoremove -y \
+#     && sudo apt-get clean -y \
+#     && sudo rm -rf /var/lib/apt/lists/*
+>>>>>>> 7ce605e (testing)
 
 RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
-    && colcon build \
-    && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
+    # && colcon build \
+    # && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
 WORKDIR $USER_WORKSPACE
