@@ -1,0 +1,41 @@
+waterlinked_driver_node:
+  ros__parameters:
+    # Descriptions for all DVL configurations can be found on the Water Linked Documentation:
+    # https://waterlinked.github.io/dvl/dvl-protocol/
+
+    # Default IP address for the DVL-A50 and DVL-125
+    ip_address: "192.168.194.95"
+
+    # Default port for the DVL-A50 and DVL-125
+    port: 16171
+
+    # Specify a timeout for the DVL connection
+    timeout: 5 # seconds
+
+    # All measurements are obtained from the DVL use the following coordinate convention:
+    # x: Forward
+    # y: Right
+    # z: Down
+    # This can be rotated using the mounting_rotation_offset parameter.
+    frame_id: "dvl_link"
+
+    speed_of_sound: 1481 # m/s
+
+    # Rotate the DVL measurements about the z-axis. This is useful if
+    # the DVL is mounted at an angle.
+    mounting_rotation_offset: 0 # degrees
+
+    # Turn on acoustic waves by default
+    # This can be set to false to help keep temperatures down
+    acoustic_enabled: true
+
+    # Turn off dark mode by default
+    dark_mode_enabled: false
+
+    # Set the range mode to auto by default
+    range_mode: "auto"
+
+    # Enable periodic cycling by default
+    # This will result in the DVL periodically searching for a bottom
+    # lock shorter than the existing bottom lock
+    periodic_cycling_enabled: true
