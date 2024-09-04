@@ -21,8 +21,11 @@
 #include "libwaterlinked/client.hpp"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/select.h>
 #include <unistd.h>
 
+#include <ctime>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <ranges>
@@ -89,6 +92,16 @@ WaterLinkedClient::WaterLinkedClient(const std::string & addr, std::uint16_t por
     throw std::runtime_error("Failed to open TCP socket");
   }
 
+  const int flags = fcntl(socket_, F_GETFL, 0);
+  if (flags < 0) {
+    throw std::runtime_error("Failed to get socket flags");
+  }
+
+  // Set the socket to non-blocking mode so that we create a timeout on the connection attempt
+  if (fcntl(socket_, F_SETFL, flags | O_NONBLOCK) < 0) {
+    throw std::runtime_error("Failed to set socket to non-blocking mode");
+  }
+
   struct sockaddr_in sockaddr;
 
   sockaddr.sin_family = AF_INET;
@@ -99,11 +112,27 @@ WaterLinkedClient::WaterLinkedClient(const std::string & addr, std::uint16_t por
     throw std::runtime_error("Invalid socket address " + addr);
   }
 
+  // Inspired by the following Stack Overflow post:
+  // https://stackoverflow.com/a/61960339
   if (connect(socket_, reinterpret_cast<struct sockaddr *>(&sockaddr), sizeof(sockaddr)) < 0) {
-    throw std::runtime_error("Failed to connect to TCP socket");
+    if (errno != EINPROGRESS && errno != EWOULDBLOCK) {
+      throw std::runtime_error("Failed to connect to TCP socket");
+    }
+
+    struct timespec start_t;
+    if (clock_gettime(CLOCK_MONOTONIC, &start_t) < 0) {
+      throw std::runtime_error("Failed to get current time when starting connection timeout");
+    }
+
+    // TODO(evan): finish this! then it's done!
   }
 
-  // Configure the socket to timeout on failed reads
+  // Restore the original flags
+  if (fcntl(socket_, F_SETFL, flags) < 0) {
+    throw std::runtime_error("Failed to set socket to blocking mode");
+  }
+
+  // Set the read timeout on the socket
   struct timeval timeout;
   timeout.tv_sec = session_timeout.count();
   timeout.tv_usec = 0;

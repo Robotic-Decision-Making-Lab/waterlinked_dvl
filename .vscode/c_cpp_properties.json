@@ -9,11 +9,14 @@
         "/usr/include/gz/**"
 =======
         "/opt/ros/rolling/include/**",
+<<<<<<< HEAD
         "/usr/include/gz/**",
 <<<<<<< HEAD
         "/usr/include/eigen3/**"
 >>>>>>> 2141b28 (Added reports)
 =======
+=======
+>>>>>>> acebd1e (Fixed driver build and started adding connection timeout)
         "/usr/include/eigen3/**",
         "/home/${USER}/ws_ros/install/**"
 >>>>>>> 2dfdec2 (started driver implementation)
