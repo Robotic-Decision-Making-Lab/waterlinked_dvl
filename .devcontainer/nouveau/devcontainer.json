@@ -3,12 +3,17 @@
   "dockerFile": "Dockerfile",
   "context": "../..",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ros/ws_ros/src/ros2-template,type=bind",
   "workspaceFolder": "/home/ros/ws_ros/src/ros2-template",
   "remoteUser": "ros",
 =======
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/libwaterlinked,type=bind",
   "workspaceFolder": "/home/ubuntu/ws_ros/src/libwaterlinked",
+=======
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/waterlinked_dvl,type=bind",
+  "workspaceFolder": "/home/ubuntu/ws_ros/src/waterlinked_dvl",
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
   "remoteUser": "ubuntu",
 >>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
   "runArgs": [

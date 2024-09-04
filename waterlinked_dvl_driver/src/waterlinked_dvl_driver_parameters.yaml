@@ -1,4 +1,4 @@
-waterlinked_driver:
+waterlinked_dvl_driver:
   ip_address:
     type: string
     default_value: "192.168.194.95"

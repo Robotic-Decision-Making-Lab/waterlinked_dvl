@@ -18,16 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, EmitEvent, RegisterEventHandler
 from launch.events import matches_action
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import LifecycleNode
 from launch_ros.event_handlers import OnStateTransition
 from launch_ros.events.lifecycle import ChangeState
+from launch_ros.substitutions import FindPackageShare
 from lifecycle_msgs.msg import Transition
 
 
@@ -35,15 +34,15 @@ def generate_launch_description():
     declare_ns = DeclareLaunchArgument("ns", default_value="")
     declare_parameters_file = DeclareLaunchArgument(
         "parameters_file",
-        default_value=os.path.join(
-            get_package_share_directory("waterlinked_driver"), "config", "dvl.yaml"
+        default_value=PathJoinSubstitution(
+            [FindPackageShare("waterlinked_dvl_driver"), "config", "dvl.yaml"]
         ),
     )
 
-    waterlinked_driver_node = LifecycleNode(
-        package="waterlinked_driver",
-        executable="waterlinked_driver",
-        name="waterlinked_driver",
+    dvl_driver_node = LifecycleNode(
+        package="waterlinked_dvl_driver",
+        executable="waterlinked_dvl_driver",
+        name="waterlinked_dvl_driver",
         namespace=LaunchConfiguration("ns"),
         output="screen",
         parameters=[LaunchConfiguration("parameters_file")],
@@ -51,20 +50,20 @@ def generate_launch_description():
 
     configure_event = EmitEvent(
         event=ChangeState(
-            lifecycle_node_matcher=matches_action(waterlinked_driver_node),
+            lifecycle_node_matcher=matches_action(dvl_driver_node),
             transition_id=Transition.TRANSITION_CONFIGURE,
         )
     )
 
     activate_event = RegisterEventHandler(
         OnStateTransition(
-            target_lifecycle_node=waterlinked_driver_node,
+            target_lifecycle_node=dvl_driver_node,
             start_state="configuring",
             goal_state="inactive",
             entities=[
                 EmitEvent(
                     event=ChangeState(
-                        lifecycle_node_matcher=matches_action(waterlinked_driver_node),
+                        lifecycle_node_matcher=matches_action(dvl_driver_node),
                         transition_id=Transition.TRANSITION_ACTIVATE,
                     )
                 )
@@ -76,7 +75,7 @@ def generate_launch_description():
         [
             declare_parameters_file,
             declare_ns,
-            waterlinked_driver_node,
+            dvl_driver_node,
             configure_event,
             activate_event,
         ]
