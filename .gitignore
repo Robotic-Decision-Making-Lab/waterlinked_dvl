@@ -5,3 +5,6 @@ log/
 
 # virtualenv
 .venv
+
+# Ruff
+.ruff_cache
