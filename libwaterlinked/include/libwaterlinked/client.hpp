@@ -92,6 +92,9 @@ public:
   /// Fetch the current configuration of the DVL.
   auto get_configuration() -> std::future<CommandResponse>;
 
+  /// Set all DVL configuration parameters at once.
+  auto set_configuration(const Configuration & configuration) -> std::future<CommandResponse>;
+
   /// In setups where multiple acoustic sensors are used it can be useful to control the pinging of each acoustic sensor
   /// individually. By setting the configuration acoustic_enabled = false the pinging of the DVL can be externally
   /// controlled. Up to 15 external trigger commands can be queued by issuing the trigger_ping command. The DVL will
