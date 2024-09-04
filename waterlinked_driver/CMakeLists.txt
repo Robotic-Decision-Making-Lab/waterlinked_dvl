@@ -41,9 +41,9 @@ ament_target_dependencies(waterlinked_driver PUBLIC ${THIS_PACKAGE_INCLUDE_DEPEN
 
 install(
     TARGETS waterlinked_driver waterlinked_driver_parameters
-    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/waterlinked_driver
 )
 
-install(DIRECTORY launch DESTINATION share/waterlinked_driver)
+install(DIRECTORY config launch DESTINATION share/waterlinked_driver)
 
 ament_package()

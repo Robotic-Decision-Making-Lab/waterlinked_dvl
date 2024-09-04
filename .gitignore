@@ -10,4 +10,10 @@ log/
 
 # virtualenv
 .venv
+<<<<<<< HEAD
 >>>>>>> 1f14078 (why tf does colcon not support fetchcontent)
+=======
+
+# Ruff
+.ruff_cache
+>>>>>>> acebd1e (Fixed driver build and started adding connection timeout)
