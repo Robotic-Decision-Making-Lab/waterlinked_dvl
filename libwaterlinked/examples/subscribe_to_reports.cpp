@@ -26,7 +26,8 @@
 /// This example demonstrates how to subscribe to velocity and dead reckoning reports from a WaterLinked DVL.
 auto main() -> int
 {
-  // Create a new client using the default IP address (192.168.194.95) and port (16171) with a 5 second session timeout.
+  // Create a new client using the default IP address (192.168.194.95) and port (16171) with a 5 second connection
+  // timeout.
   waterlinked::WaterLinkedClient client("192.168.194.95", 16171, std::chrono::seconds(5));
 
   // Register a callback to receive velocity reports

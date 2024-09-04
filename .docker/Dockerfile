@@ -3,18 +3,26 @@ ARG ROS_DISTRO=humble
 FROM ros:$ROS_DISTRO-ros-base as ci
 =======
 ARG ROS_DISTRO=rolling
+<<<<<<< HEAD
 FROM ros:$ROS_DISTRO-ros-base AS ci
 >>>>>>> db1fbdb (Cleaned up dockerfile)
+=======
+FROM ros:$ROS_DISTRO-ros-base AS desktop
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
+<<<<<<< HEAD
 # Update to be your project's name
 <<<<<<< HEAD
 ENV PROJECT_NAME=ros2-template
 =======
 ENV PROJECT_NAME=libwaterlinked
 >>>>>>> cc84fbc (Finished initial implementation of driver and renamed to libwaterlinked)
+=======
+ENV PROJECT_NAME=waterlinked_dvl
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
 
 COPY . src/$PROJECT_NAME
 
@@ -33,6 +41,7 @@ RUN apt-get -q update \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
+<<<<<<< HEAD
 # Install all ROS dependencies needed for CI
 RUN apt-get -q update \
     && apt-get -q -y upgrade \
@@ -48,6 +57,9 @@ FROM ci AS desktop
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Configure a new non-root user
+=======
+# Configure the ubuntu non-root user
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
 ARG USERNAME=ubuntu
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -82,8 +94,8 @@ RUN sudo apt-get -q update \
     && sudo rm -rf /var/lib/apt/lists/*
 
 RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
-    # && colcon build \
-    # && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
+    && colcon build \
+    && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
 WORKDIR $USER_WORKSPACE

@@ -17,6 +17,7 @@ on:
 
 env:
 <<<<<<< HEAD
+<<<<<<< HEAD
   PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/ros2-template') }}
 =======
   PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/libwaterlinked') }}
@@ -115,6 +116,11 @@ jobs:
 
 =======
 >>>>>>> db1fbdb (Cleaned up dockerfile)
+=======
+  PUSH: ${{ (github.event_name != 'pull_request') && (github.repository == 'robotic-decision-making-lab/waterlinked_dvl') }}
+
+jobs:
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
   desktop:
     strategy:
       fail-fast: false

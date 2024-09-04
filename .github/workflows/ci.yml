@@ -1,24 +1,26 @@
-name: Continuous Integration
+name: Continuous Integration (CI)
 
 on:
+  pull_request:
   push:
     branches:
+<<<<<<< HEAD
       - humble
   pull_request:
+=======
+      - ros2
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
   workflow_dispatch:
 
-env:
-  CLANG_TIDY: true
-
 jobs:
-  test:
-    name: Test Implementation
-    runs-on: ubuntu-latest
-
+  pre-commit:
+    name: CI
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         env:
+<<<<<<< HEAD
           - IMAGE: humble-ci
             ROS_DISTRO: humble
     steps:
@@ -33,10 +35,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+=======
+          - ROS_DISTRO: rolling
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
 
       - name: Run ROS Industrial CI
         uses: ros-industrial/industrial_ci@master
         env:
+<<<<<<< HEAD
 <<<<<<< HEAD
           DOCKER_IMAGE: ghcr.io/robotic-decision-making-lab/ros2-template:${{ matrix.env.IMAGE }}
 =======
@@ -46,3 +55,11 @@ jobs:
             -Wall -Wextra -Wpedantic -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls
           CC: ${{ env.CLANG_TIDY && 'clang' }}
           CXX: ${{ env.CLANG_TIDY && 'clang++' }}
+=======
+          ROS_DISTRO: ${{ matrix.env.ROS_DISTRO }}
+          CXXFLAGS: -Wall -Wextra -Wpedantic
+          CLANG_TIDY: true
+          UPSTREAM_WORKSPACE: ros2.repos
+          AFTER_SETUP_UPSTREAM_WORKSPACE: vcs pull $BASEDIR/upstream_ws/src
+          AFTER_SETUP_DOWNSTREAM_WORKSPACE: vcs pull $BASEDIR/downstream_ws/src
+>>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
