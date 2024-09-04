@@ -24,20 +24,20 @@ waterlinked_driver:
     read_only: true
 
   speed_of_sound:
-    type: double
-    default_value: 1500.0
+    type: int
+    default_value: 1500
     description: "The speed of sound in water (m/s)."
     read_only: true
     validation:
-      bounds<>: [1000.0, 2000.0]
+      bounds<>: [1000, 2000]
 
   mounting_rotation_offset:
-    type: double
-    default_value: 0.0
+    type: int
+    default_value: 0
     description: "The mounting rotation offset of the DVL (degrees)."
     read_only: true
     validation:
-      bounds<>: [0.0, 360.0]
+      bounds<>: [0, 360]
 
   acoustic_enabled:
     type: bool

@@ -43,6 +43,18 @@ auto from_json(const nlohmann::json & j, Configuration & r) -> void
   j.at("periodic_cycling_enabled").get_to(r.periodic_cycling_enabled);
 }
 
+auto to_json(nlohmann::json & j, const Configuration & r) -> void
+{
+  j = nlohmann::json{
+    {"speed_of_sound", r.speed_of_sound},
+    {"acoustic_enabled", r.acoustic_enabled},
+    {"dark_mode_enabled", r.dark_mode_enabled},
+    {"mounting_rotation_offset", r.mounting_rotation_offset},
+    {"range_mode", r.range_mode},
+    {"periodic_cycling_enabled", r.periodic_cycling_enabled},
+  };
+}
+
 auto from_json(const nlohmann::json & j, CommandResponse & r) -> void
 {
   j.at("response_to").get_to(r.response_to);
