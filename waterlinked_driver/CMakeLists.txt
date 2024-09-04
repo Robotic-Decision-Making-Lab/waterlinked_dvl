@@ -13,6 +13,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     geometry_msgs
     std_srvs
     marine_acoustic_msgs
+    nav_msgs
+    tf2_geometry_msgs
 )
 
 find_package(ament_cmake REQUIRED)
@@ -30,13 +32,6 @@ generate_parameter_library(waterlinked_driver_parameters
 add_executable(waterlinked_driver)
 target_sources(waterlinked_driver PRIVATE src/waterlinked_driver.cpp)
 
-target_include_directories(
-    waterlinked_driver
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PRIVATE ${PROJECT_SOURCE_DIR}/src
-)
 target_compile_features(waterlinked_driver PUBLIC cxx_std_20)
 target_link_libraries(
     waterlinked_driver
@@ -46,8 +41,9 @@ ament_target_dependencies(waterlinked_driver PUBLIC ${THIS_PACKAGE_INCLUDE_DEPEN
 
 install(
     TARGETS waterlinked_driver waterlinked_driver_parameters
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+install(DIRECTORY launch DESTINATION share/waterlinked_driver)
 
 ament_package()

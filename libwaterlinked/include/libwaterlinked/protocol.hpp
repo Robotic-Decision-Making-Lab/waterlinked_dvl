@@ -173,7 +173,7 @@ struct CommandResponse
 
 /**
  * The below `from_json` functions are used to parse JSON objects into the corresponding C++ objects. They should NOT be
- * called directly. Rather, you should use the json API, as done in the following example:
+ * called directly. Rather, you should use the `json` API, as done in the following example:
  *
  * ```
  * const std::string json_string = R"(
@@ -199,6 +199,8 @@ auto from_json(const nlohmann::json & j, VelocityReport & r) -> void;
 auto from_json(const nlohmann::json & j, DeadReckoningReport & r) -> void;
 
 auto from_json(const nlohmann::json & j, Configuration & r) -> void;
+
+auto to_json(nlohmann::json & j, const Configuration & r) -> void;
 
 auto from_json(const nlohmann::json & j, CommandResponse & r) -> void;
 

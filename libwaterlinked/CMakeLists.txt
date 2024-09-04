@@ -17,14 +17,16 @@ find_package(Eigen3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 add_library(libwaterlinked SHARED)
-target_sources(libwaterlinked PRIVATE src/client.cpp src/protocol.cpp)
 
-target_include_directories(
+target_sources(
     libwaterlinked
+    PRIVATE src/client.cpp src/protocol.cpp
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PRIVATE ${PROJECT_SOURCE_DIR}/src
+        FILE_SET HEADERS
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/libwaterlinked/client.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/libwaterlinked/protocol.hpp
 )
 target_compile_features(libwaterlinked PUBLIC cxx_std_20)
 target_link_libraries(
@@ -34,7 +36,6 @@ target_link_libraries(
 set_target_properties(libwaterlinked PROPERTIES PREFIX "")
 
 set(EXAMPLES send_command subscribe_to_reports)
-
 foreach(example IN ITEMS ${EXAMPLES})
     add_executable(${example} examples/${example}.cpp)
     add_dependencies(${example} libwaterlinked)
@@ -49,8 +50,6 @@ foreach(example IN ITEMS ${EXAMPLES})
     )
 endforeach()
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 install(
     TARGETS libwaterlinked
     EXPORT libwaterlinkedTargets
@@ -58,6 +57,7 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILE_SET HEADERS
 )
 
 if(BUILD_TESTING)

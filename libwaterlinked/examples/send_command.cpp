@@ -25,6 +25,7 @@
 #include "libwaterlinked/client.hpp"
 #include "libwaterlinked/protocol.hpp"
 
+/// This example demonstrates how to send commands and receive responses from a Water Linked DVL.
 auto main() -> int
 {
   // Create a new client using the default IP address (192.168.194.95) and port (16171) with a 5 second session
