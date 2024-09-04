@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "waterlinked_driver.hpp"
+#include "waterlinked_dvl_driver.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -49,8 +49,8 @@ auto populate_service_response(
 
 }  // namespace
 
-WaterLinkedDriver::WaterLinkedDriver()
-: rclcpp_lifecycle::LifecycleNode("waterlinked_driver")
+WaterLinkedDvlDriver::WaterLinkedDvlDriver()
+: rclcpp_lifecycle::LifecycleNode("waterlinked_dvl_driver")
 {
   dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
   dvl_msg_.dvl_type = marine_acoustic_msgs::msg::Dvl::DVL_TYPE_PISTON;  // 4-beam convex Janus array
@@ -81,16 +81,16 @@ WaterLinkedDriver::WaterLinkedDriver()
   dvl_msg_.beam_unit_vec[3].z = 0.38268343236508984;
 }
 
-auto WaterLinkedDriver::on_configure(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
+auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
 {
-  RCLCPP_INFO(get_logger(), "Configuring the WaterLinkedDriver");
+  RCLCPP_INFO(get_logger(), "Configuring the WaterLinkedDvlDriver");
 
   try {
-    param_listener_ = std::make_shared<waterlinked_driver::ParamListener>(get_node_parameters_interface());
+    param_listener_ = std::make_shared<waterlinked_dvl_driver::ParamListener>(get_node_parameters_interface());
     params_ = param_listener_->get_params();
   }
   catch (const std::exception & e) {
-    RCLCPP_ERROR(get_logger(), "Failed to get WaterLinkedDriver parameters: %s", e.what());
+    RCLCPP_ERROR(get_logger(), "Failed to get WaterLinkedDvlDriver parameters: %s", e.what());
     return CallbackReturn::ERROR;
   }
 
@@ -100,7 +100,7 @@ auto WaterLinkedDriver::on_configure(const rclcpp_lifecycle::State & /*previous_
       std::make_unique<WaterLinkedClient>(params_.ip_address, params_.port, std::chrono::seconds(params_.timeout));
   }
   catch (const std::exception & e) {
-    RCLCPP_ERROR(get_logger(), "Failed to create WaterLinkedClient: %s", e.what());
+    RCLCPP_ERROR(get_logger(), "Failed to create WaterLinkedClient. %s", e.what());
     return CallbackReturn::ERROR;
   }
 
@@ -116,7 +116,8 @@ auto WaterLinkedDriver::on_configure(const rclcpp_lifecycle::State & /*previous_
   };
   std::future<CommandResponse> f = client_->set_configuration(config);
 
-  if (const CommandResponse response = f.get(); !response.success) {
+  const CommandResponse response = f.get();
+  if (!response.success) {
     RCLCPP_ERROR(get_logger(), "Failed to set DVL configuration: %s", response.error_message.c_str());  // NOLINT
     return CallbackReturn::ERROR;
   }
@@ -282,10 +283,11 @@ auto WaterLinkedDriver::on_configure(const rclcpp_lifecycle::State & /*previous_
   return CallbackReturn::SUCCESS;
 }
 
-auto WaterLinkedDriver::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
+auto WaterLinkedDvlDriver::on_activate(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
 {
   std::future<CommandResponse> f = client_->reset_dead_reckoning();
-  if (const CommandResponse response = f.get(); !response.success) {
+  const CommandResponse response = f.get();
+  if (!response.success) {
     RCLCPP_ERROR(get_logger(), "Failed to reset dead reckoning: %s", response.error_message.c_str());
     return CallbackReturn::ERROR;
   }
@@ -300,7 +302,7 @@ auto main(int argc, char * argv[]) -> int
 
   rclcpp::executors::MultiThreadedExecutor executor;
 
-  auto node = std::make_shared<waterlinked::ros::WaterLinkedDriver>();
+  auto node = std::make_shared<waterlinked::ros::WaterLinkedDvlDriver>();
   executor.add_node(node->get_node_base_interface());
 
   executor.spin();

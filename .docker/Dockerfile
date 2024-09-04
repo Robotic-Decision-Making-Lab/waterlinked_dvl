@@ -1,11 +1,10 @@
 ARG ROS_DISTRO=rolling
-FROM ros:$ROS_DISTRO-ros-base AS ci
+FROM ros:$ROS_DISTRO-ros-base AS desktop
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
-# Update to be your project's name
-ENV PROJECT_NAME=libwaterlinked
+ENV PROJECT_NAME=waterlinked_dvl
 
 COPY . src/$PROJECT_NAME
 
@@ -24,20 +23,6 @@ RUN apt-get -q update \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-
-# Install all ROS dependencies needed for CI
-RUN apt-get -q update \
-    && apt-get -q -y upgrade \
-    && rosdep update \
-    && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --as-root=apt:false \
-    && rm -rf src \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-FROM ci AS desktop
-
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Configure the ubuntu non-root user
 ARG USERNAME=ubuntu
@@ -80,8 +65,8 @@ RUN sudo apt-get -q update \
     && sudo rm -rf /var/lib/apt/lists/*
 
 RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
-    # && colcon build \
-    # && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
+    && colcon build \
+    && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
 WORKDIR $USER_WORKSPACE
