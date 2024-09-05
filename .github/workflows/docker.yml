@@ -7,8 +7,11 @@ on:
       - humble
 =======
       - main
+<<<<<<< HEAD
       - develop
 >>>>>>> db1fbdb (Cleaned up dockerfile)
+=======
+>>>>>>> 4411139 (Removed develop from docker cd triggers)
   pull_request:
     paths:
       - .docker/**
