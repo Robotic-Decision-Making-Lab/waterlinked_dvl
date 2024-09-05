@@ -33,7 +33,7 @@ for your project
 =======
 ```bash
 vcs import src < src/waterlinked_dvl/ros2.repos && \
-rosdep install --from paths src -y --ignore-src
+rosdep install --from paths src -y --ignore-src --skip-keys nlohmann_json
 ```
 >>>>>>> 2d5736b (Added readme)
 
