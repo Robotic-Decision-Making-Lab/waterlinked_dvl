@@ -29,3 +29,4 @@ jobs:
           UPSTREAM_WORKSPACE: ros2.repos
           AFTER_SETUP_UPSTREAM_WORKSPACE: vcs pull $BASEDIR/upstream_ws/src
           AFTER_SETUP_DOWNSTREAM_WORKSPACE: vcs pull $BASEDIR/downstream_ws/src
+          ROSDEP_SKIP_KEYS: nlohmann_json
