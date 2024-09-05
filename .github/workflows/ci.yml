@@ -45,4 +45,8 @@ jobs:
           UPSTREAM_WORKSPACE: ros2.repos
           AFTER_SETUP_UPSTREAM_WORKSPACE: vcs pull $BASEDIR/upstream_ws/src
           AFTER_SETUP_DOWNSTREAM_WORKSPACE: vcs pull $BASEDIR/downstream_ws/src
+<<<<<<< HEAD
 >>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
+=======
+          ROSDEP_SKIP_KEYS: nlohmann_json
+>>>>>>> 8cedc34 (Fix for ci rosdeps)
