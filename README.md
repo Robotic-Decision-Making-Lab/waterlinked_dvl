@@ -23,7 +23,7 @@ Then install the project dependencies using vcstool and rosdep
 
 ```bash
 vcs import src < src/waterlinked_dvl/ros2.repos && \
-rosdep install --from paths src -y --ignore-src
+rosdep install --from paths src -y --ignore-src --skip-keys nlohmann_json
 ```
 
 Finally, build the workspace using colcon
