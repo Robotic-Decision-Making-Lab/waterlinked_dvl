@@ -48,7 +48,7 @@ colcon build && source install/setup.bash
 Run the following command to launch the DVL ROS 2 driver:
 
 ```bash
-ros2 launch dvl_driver dvl.launch.py
+ros2 launch waterlinked_dvl_driver dvl.launch.py
 ```
 
 ## Getting help
