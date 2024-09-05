@@ -97,6 +97,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN vcs import src < src/$PROJECT_NAME/ros2.repos
 WORKDIR $USER_WORKSPACE
 <<<<<<< HEAD
+<<<<<<< HEAD
 RUN sudo apt-get -q update \
     && sudo apt-get -q -y upgrade \
     && rosdep update \
@@ -114,10 +115,19 @@ RUN sudo apt-get -q update \
 #     && sudo apt-get clean -y \
 #     && sudo rm -rf /var/lib/apt/lists/*
 >>>>>>> 7ce605e (testing)
+=======
+RUN sudo apt-get -q update \
+    && sudo apt-get -q -y upgrade \
+    && rosdep update \
+    && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --skip-keys nlohmann_json \
+    && sudo apt-get autoremove -y \
+    && sudo apt-get clean -y \
+    && sudo rm -rf /var/lib/apt/lists/*
+>>>>>>> f765049 (Fixed install)
 
 RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
-    # && colcon build \
-    # && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
+    && colcon build \
+    && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
 WORKDIR $USER_WORKSPACE
