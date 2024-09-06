@@ -33,25 +33,25 @@ auto main() -> int
   // Register a callback to receive velocity reports
   client.register_callback([](const waterlinked::VelocityReport & report) {
     std::cout << "Received velocity report:\n";
-    std::cout << "  Time: " << report.time.count() << "ms\n";
-    std::cout << "  Velocity: (" << report.vx << ", " << report.vy << ", " << report.vz << ") m/s\n";
-    std::cout << "  Figure of merit: " << report.fom << " m/s\n";
-    std::cout << "  Altitude: " << report.altitude << " m\n";
+    std::cout << "  Time: " << report.time.count() << "\n";
+    std::cout << "  Velocity: (" << report.vx << ", " << report.vy << ", " << report.vz << ")\n";
+    std::cout << "  Figure of merit: " << report.fom << "\n";
+    std::cout << "  Altitude: " << report.altitude << "\n";
     std::cout << "  Velocity valid: " << report.velocity_valid << "\n";
     std::cout << "  Status: " << static_cast<int>(report.status) << "\n";
-    std::cout << "  Time of validity: " << report.time_of_validity.time_since_epoch().count() << "us\n";
-    std::cout << "  Time of transmission: " << report.time_of_transmission.time_since_epoch().count() << "us\n";
+    std::cout << "  Time of validity: " << report.time_of_validity.time_since_epoch().count() << "\n";
+    std::cout << "  Time of transmission: " << report.time_of_transmission.time_since_epoch().count() << "\n";
   });
 
   // Register a callback to receive dead reckoning reports
   client.register_callback([](const waterlinked::DeadReckoningReport & report) {
     std::cout << "Received dead reckoning report:\n";
-    std::cout << "  Timestamp: " << report.ts.time_since_epoch().count() << "us\n";
-    std::cout << "  Position: (" << report.x << ", " << report.y << ", " << report.z << ") m\n";
-    std::cout << "  Standard deviation: " << report.std << " m\n";
-    std::cout << "  Roll: " << report.roll << " degrees\n";
-    std::cout << "  Pitch: " << report.pitch << " degrees\n";
-    std::cout << "  Yaw: " << report.yaw << " degrees\n";
+    std::cout << "  Timestamp: " << report.ts.time_since_epoch().count() << "\n";
+    std::cout << "  Position: (" << report.x << ", " << report.y << ", " << report.z << ") \n";
+    std::cout << "  Standard deviation: " << report.std << "\n";
+    std::cout << "  Roll: " << report.roll << "\n";
+    std::cout << "  Pitch: " << report.pitch << "\n";
+    std::cout << "  Yaw: " << report.yaw << "\n";
   });
 
   // Let the driver run indefinitely
