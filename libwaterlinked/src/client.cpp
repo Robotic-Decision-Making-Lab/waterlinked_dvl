@@ -242,7 +242,7 @@ auto WaterLinkedClient::get_configuration() -> std::future<CommandResponse>
 
 auto WaterLinkedClient::set_configuration(const Configuration & configuration) -> std::future<CommandResponse>
 {
-  nlohmann::json config_json = configuration;
+  const nlohmann::json config_json = configuration;
   return send_command({{"command", "set_config"}, {"parameters", config_json}});
 }
 
