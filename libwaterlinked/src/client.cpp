@@ -76,7 +76,7 @@ auto parse_bytes(const std::deque<std::uint8_t> & buffer) -> std::vector<nlohman
       json_objects.push_back(nlohmann::json::parse(data));
     }
     catch (const std::exception & e) {
-      std::cout << "An error occurred while attempting to parse the DVL message: " << e.what() << "\n";
+      std::cout << "An error occurred while attempting to parse the DVL message. " << e.what() << "\n";
     }
   }
 
@@ -299,9 +299,9 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
 auto WaterLinkedClient::poll_connection() -> void
 {
   // Maintain a queue to store incoming data
-  const std::size_t max_bytes_to_read = 1024;
-  std::deque<std::uint8_t> buffer(max_bytes_to_read);
-  std::size_t n_bytes_to_read = buffer.size();
+  const std::size_t max_bytes_to_read = 2048;  // Reports can be quite large, so create a large buffer
+  std::deque<std::uint8_t> buffer;
+  std::size_t n_bytes_to_read = max_bytes_to_read;
 
   while (running_.load()) {
     if (read_from_socket(socket_, buffer, n_bytes_to_read) < 0) {
