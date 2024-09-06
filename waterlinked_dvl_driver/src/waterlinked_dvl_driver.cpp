@@ -280,6 +280,8 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
       populate_service_response(response, f);
     });
 
+  RCLCPP_INFO(get_logger(), "WaterLinkedDvlDriver loaded successfully");
+
   return CallbackReturn::SUCCESS;
 }
 

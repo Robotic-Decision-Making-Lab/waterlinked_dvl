@@ -25,7 +25,7 @@ waterlinked_dvl_driver:
 
   speed_of_sound:
     type: int
-    default_value: 1500
+    default_value: 1481
     description: "The speed of sound in water (m/s)."
     read_only: true
     validation:
@@ -33,7 +33,7 @@ waterlinked_dvl_driver:
 
   mounting_rotation_offset:
     type: int
-    default_value: 0
+    default_value: 180
     description: "The mounting rotation offset of the DVL (degrees)."
     read_only: true
     validation:
