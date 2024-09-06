@@ -8,10 +8,14 @@ on:
 =======
       - main
 <<<<<<< HEAD
+<<<<<<< HEAD
       - develop
 >>>>>>> db1fbdb (Cleaned up dockerfile)
 =======
 >>>>>>> 4411139 (Removed develop from docker cd triggers)
+=======
+      - develop
+>>>>>>> a70ec26 (Push image)
   pull_request:
     paths:
       - .docker/**
