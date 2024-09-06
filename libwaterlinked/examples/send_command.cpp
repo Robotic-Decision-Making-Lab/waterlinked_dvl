@@ -42,10 +42,10 @@ auto main() -> int
   auto config = response.result.get<waterlinked::Configuration>();
 
   std::cout << "Current configuration:\n";
-  std::cout << "  Speed of sound: " << config.speed_of_sound << " m/s\n";
+  std::cout << "  Speed of sound: " << config.speed_of_sound << "\n";
   std::cout << "  Acoustic enabled: " << config.acoustic_enabled << "\n";
   std::cout << "  Dark mode enabled: " << config.dark_mode_enabled << "\n";
-  std::cout << "  Mounting rotation offset: " << config.mounting_rotation_offset << " degrees\n";
+  std::cout << "  Mounting rotation offset: " << config.mounting_rotation_offset << "\n";
   std::cout << "  Range mode: " << config.range_mode << "\n";
   std::cout << "  Periodic cycling enabled: " << config.periodic_cycling_enabled << "\n";
 

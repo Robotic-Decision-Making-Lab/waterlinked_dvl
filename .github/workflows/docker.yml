@@ -9,6 +9,7 @@ on:
       - main
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       - develop
 >>>>>>> db1fbdb (Cleaned up dockerfile)
 =======
@@ -16,6 +17,8 @@ on:
 =======
       - develop
 >>>>>>> a70ec26 (Push image)
+=======
+>>>>>>> d71daa4 (Resolved bug in json parsing)
   pull_request:
     paths:
       - .docker/**
