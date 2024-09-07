@@ -42,7 +42,7 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 class WaterLinkedDvlDriver : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  WaterLinkedDvlDriver(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit WaterLinkedDvlDriver(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   auto on_configure(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
