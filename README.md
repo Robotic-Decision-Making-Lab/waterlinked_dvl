@@ -1,38 +1,55 @@
-# ROS 2 Project Template
+# Water Linked DVL API
 
-Setting up a new ROS 2 project often requires a significant amount of
-preparation and boilerplate configuration, costing you valuable robot
-development time 🤖. Recognizing this, we have put together this template
-repository configured with a ROS 2 development environment, continuous
-integration, and more. This project is the result of much trial and error
-across many projects, and we hope that this helps you save some effort in
-setting up your own projects.
+waterlinked_dvl is a C++ library and ROS 2 driver designed to interface with
+[Water Linked DVL devices](https://waterlinked.com/dvl), including the DVL-A50
+and DVL-A125. Get started with waterlinked_dvl by installing the project,
+exploring the implemented library [examples](https://github.com/Robotic-Decision-Making-Lab/waterlinked_dvl/tree/main/examples),
+or by launching the ROS 2 driver.
 
-## Features
+> :warning: This project is not affiliated with or maintained by Water Linked.
+> Please refer to the Water Linked [GitHub Organization](https://github.com/waterlinked/)
+> for all official software.
 
-The main features of this template are:
+## Installation
 
-- A development environment for Visual Studio Code including a [development container](https://code.visualstudio.com/docs/devcontainers/containers)
-and configurations for linting and auto-formatting your code
-- Docker images that support deployment to a variety of systems (e.g., arm64
-systems)
-- Continuous integration and deployment pipelines using GitHub Actions
-- GitHub Issue and Pull Request templates
+To install waterlinked_dvl, first clone the repository to the `src/` directory
+of your ROS 2 workspace
 
-## Quick start
+```bash
+git clone git@github.com:Robotic-Decision-Making-Lab/waterlinked_dvl.git
+```
 
-Using this template is as easy as 1, 2, 3...
+Then install the project dependencies using vcstool and rosdep
 
-1. Use this repository [as a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
-for your project
-2. Replace all instances of "libdvla50" with your own project's name
-3. Replace the source code with your own project!
+```bash
+vcs import src < src/waterlinked_dvl/ros2.repos && \
+rosdep install --from paths src -y --ignore-src --skip-keys nlohmann_json
+```
 
-Feel free to remove any unused configurations/pipelines and to adjust things as
-you see fit for your project!
+Finally, build the workspace using colcon
+
+```bash
+colcon build && source install/setup.bash
+```
+
+## Usage
+
+Prior to using waterlinked_dvl, first ensure that you can successfully connect
+to your respective device. For additional information, please refer to the
+Water Linked [networking documentation](https://waterlinked.github.io/dvl/networking/).
+After verifying the network connection, the DVL ROS 2 driver can be launched
+with the following command:
+
+```bash
+ros2 launch waterlinked_dvl_driver dvl.launch.py
+```
 
 ## Getting help
 
-If you have questions regarding usage of this project or would like to
-contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/libdvla50/discussions)
-board!
+If you have questions regarding usage of waterlinked_dvl or regarding contributing
+to this project, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/waterlinked_dvl/discussions)
+board.
+
+## License
+
+waterlinked_dvl is released under the MIT license.

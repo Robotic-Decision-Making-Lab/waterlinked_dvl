@@ -1,11 +1,10 @@
 ARG ROS_DISTRO=rolling
-FROM ros:$ROS_DISTRO-ros-base as ci
+FROM ros:$ROS_DISTRO-ros-base AS desktop
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
-# Update to be your project's name
-ENV PROJECT_NAME=libdvla50
+ENV PROJECT_NAME=waterlinked_dvl
 
 COPY . src/$PROJECT_NAME
 
@@ -24,20 +23,6 @@ RUN apt-get -q update \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-
-# Install all ROS dependencies needed for CI
-RUN apt-get -q update \
-    && apt-get -q -y upgrade \
-    && rosdep update \
-    && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --as-root=apt:false \
-    && rm -rf src \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-FROM ci as robot
-
-ENV DEBIAN_FRONTEND=noninteractive
 
 # Configure the ubuntu non-root user
 ARG USERNAME=ubuntu
@@ -66,15 +51,13 @@ RUN python3 -m venv --system-site-packages $VIRTUAL_ENV \
     && echo "\n# Ensure colcon is run in the venv\nalias colcon='python3 -m colcon'" >> /home/$USERNAME/.bashrc
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Uncomment to download and install external repos used by the project
-# RUN vcs import src < src/$PROJECT_NAME/ros2.repos
-
 # Install all ROS dependencies
+RUN vcs import src < src/$PROJECT_NAME/ros2.repos
 WORKDIR $USER_WORKSPACE
 RUN sudo apt-get -q update \
     && sudo apt-get -q -y upgrade \
     && rosdep update \
-    && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} \
+    && rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --skip-keys nlohmann_json \
     && sudo apt-get autoremove -y \
     && sudo apt-get clean -y \
     && sudo rm -rf /var/lib/apt/lists/*
@@ -84,22 +67,9 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
     && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
-FROM robot as desktop
-
-ENV DEBIAN_FRONTEND=noninteractive
-ENV USER_WORKSPACE=/home/$USERNAME/ws_ros
 WORKDIR $USER_WORKSPACE
 
-# Install Gazebo
-RUN sudo apt-get -q update \
-    && sudo apt-get -q -y upgrade \
-    && sudo apt-get install -y \
-    ros-$ROS_DISTRO-ros-gz \
-    && sudo apt-get autoremove -y \
-    && sudo apt-get clean -y \
-    && sudo rm -rf /var/lib/apt/lists/*
-
-FROM desktop as desktop-nvidia
+FROM desktop AS desktop-nvidia
 
 # Install NVIDIA software
 RUN sudo apt-get update \
