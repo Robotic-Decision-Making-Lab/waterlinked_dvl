@@ -5,11 +5,15 @@ on:
   push:
     branches:
 <<<<<<< HEAD
+<<<<<<< HEAD
       - iron
   pull_request:
 =======
       - ros2
 >>>>>>> b4ac968 (Finished connection timeout implementation and renamed packages)
+=======
+      - main
+>>>>>>> 1c5df60 (Fixed ci workflow and bumped minimum cmake version)
   workflow_dispatch:
 
 jobs:
