@@ -9,8 +9,8 @@
   <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
   <license>MIT</license>
 
-  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/libwaterlinked.git</url>
-  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/libwaterlinked/issues</url>
+  <url type="repository">https://github.com/Robotic-Decision-Making-Lab/waterlinked_dvl.git</url>
+  <url type="bugtracker">https://github.com/Robotic-Decision-Making-Lab/waterlinked_dvl/issues</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
