@@ -26,7 +26,7 @@
 #include "libwaterlinked/client.hpp"
 #include "marine_acoustic_msgs/msg/dvl.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-// #include "rclcpp_components/register_node_macro.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_srvs/srv/trigger.hpp"
@@ -42,7 +42,7 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 class WaterLinkedDvlDriver : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  WaterLinkedDvlDriver();
+  WaterLinkedDvlDriver(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   auto on_configure(const rclcpp_lifecycle::State & previous_state) -> CallbackReturn override;
 
@@ -74,4 +74,4 @@ private:
 
 }  // namespace waterlinked::ros
 
-// RCLCPP_COMPONENTS_REGISTER_NODE(waterlinked::driver::WaterLinkedDvlDriver)
+RCLCPP_COMPONENTS_REGISTER_NODE(waterlinked::ros::WaterLinkedDvlDriver)

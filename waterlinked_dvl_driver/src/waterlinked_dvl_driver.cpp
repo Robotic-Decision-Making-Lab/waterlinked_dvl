@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "waterlinked_dvl_driver.hpp"
+#include "waterlinked_dvl_driver/waterlinked_dvl_driver.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -49,36 +49,9 @@ auto populate_service_response(
 
 }  // namespace
 
-WaterLinkedDvlDriver::WaterLinkedDvlDriver()
-: rclcpp_lifecycle::LifecycleNode("waterlinked_dvl_driver")
+WaterLinkedDvlDriver::WaterLinkedDvlDriver(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("waterlinked_dvl_driver", options)
 {
-  dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
-  dvl_msg_.dvl_type = marine_acoustic_msgs::msg::Dvl::DVL_TYPE_PISTON;  // 4-beam convex Janus array
-
-  // The following has been retrieved from:
-  // https://github.com/ndahn/dvl_a50/blob/1e6a5304235facf53ecf82043fb5ba4c8569016b/src/dvl_a50_ros2.cpp#L45
-
-  // Each beam points 22.5° away from the center, LED pointing forward.
-  // Transducers are rotated 45° around Z.
-  // Beam 1 (+135° from X)
-  dvl_msg_.beam_unit_vec[0].x = -0.6532814824381883;
-  dvl_msg_.beam_unit_vec[0].y = 0.6532814824381883;
-  dvl_msg_.beam_unit_vec[0].z = 0.38268343236508984;
-
-  // Beam 2 (-135° from X)
-  dvl_msg_.beam_unit_vec[1].x = -0.6532814824381883;
-  dvl_msg_.beam_unit_vec[1].y = -0.6532814824381883;
-  dvl_msg_.beam_unit_vec[1].z = 0.38268343236508984;
-
-  // Beam 3 (-45° from X)
-  dvl_msg_.beam_unit_vec[2].x = 0.6532814824381883;
-  dvl_msg_.beam_unit_vec[2].y = -0.6532814824381883;
-  dvl_msg_.beam_unit_vec[2].z = 0.38268343236508984;
-
-  // Beam 4 (+45° from X)
-  dvl_msg_.beam_unit_vec[3].x = 0.6532814824381883;
-  dvl_msg_.beam_unit_vec[3].y = 0.6532814824381883;
-  dvl_msg_.beam_unit_vec[3].z = 0.38268343236508984;
 }
 
 auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previous_state*/) -> CallbackReturn
@@ -94,7 +67,6 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     return CallbackReturn::ERROR;
   }
 
-  // The client does 99% of the work, this is just a ROS wrapper around its functionality
   try {
     client_ =
       std::make_unique<WaterLinkedClient>(params_.ip_address, params_.port, std::chrono::seconds(params_.timeout));
@@ -122,9 +94,38 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     return CallbackReturn::ERROR;
   }
 
+  // Pre-populate the sensor state messages with known, static values
   dvl_msg_.header.frame_id = params_.frame_id;
   dead_reckoning_msg_.header.frame_id = params_.frame_id;
   odom_msg_.header.frame_id = params_.frame_id;
+
+  dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
+  dvl_msg_.dvl_type = marine_acoustic_msgs::msg::Dvl::DVL_TYPE_PISTON;  // 4-beam convex Janus array
+
+  // The following has been retrieved from:
+  // https://github.com/ndahn/dvl_a50/blob/1e6a5304235facf53ecf82043fb5ba4c8569016b/src/dvl_a50_ros2.cpp#L45
+
+  // Each beam points 22.5° away from the center, LED pointing forward.
+  // Transducers are rotated 45° around Z.
+  // Beam 1 (+135° from X)
+  dvl_msg_.beam_unit_vec[0].x = -0.6532814824381883;
+  dvl_msg_.beam_unit_vec[0].y = 0.6532814824381883;
+  dvl_msg_.beam_unit_vec[0].z = 0.38268343236508984;
+
+  // Beam 2 (-135° from X)
+  dvl_msg_.beam_unit_vec[1].x = -0.6532814824381883;
+  dvl_msg_.beam_unit_vec[1].y = -0.6532814824381883;
+  dvl_msg_.beam_unit_vec[1].z = 0.38268343236508984;
+
+  // Beam 3 (-45° from X)
+  dvl_msg_.beam_unit_vec[2].x = 0.6532814824381883;
+  dvl_msg_.beam_unit_vec[2].y = -0.6532814824381883;
+  dvl_msg_.beam_unit_vec[2].z = 0.38268343236508984;
+
+  // Beam 4 (+45° from X)
+  dvl_msg_.beam_unit_vec[3].x = 0.6532814824381883;
+  dvl_msg_.beam_unit_vec[3].y = 0.6532814824381883;
+  dvl_msg_.beam_unit_vec[3].z = 0.38268343236508984;
 
   dvl_pub_ = create_publisher<marine_acoustic_msgs::msg::Dvl>("~/velocity_report", rclcpp::SystemDefaultsQoS());
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("~/odom", rclcpp::SystemDefaultsQoS());
