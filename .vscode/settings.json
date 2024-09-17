@@ -23,13 +23,13 @@
   "autoDocstring.startOnNewLine": false,
   "autoDocstring.docstringFormat": "google-notypes",
   "python.autoComplete.extraPaths": [
-    "/opt/ros/rolling/lib/python3.12/site-packages/",
-    "/opt/ros/rolling/local/lib/python3.12/dist-packages/",
+    "/opt/ros/humble/lib/python3.12/site-packages/",
+    "/opt/ros/humble/local/lib/python3.12/dist-packages/",
     "${workspaceFolder}/install/"
   ],
   "python.analysis.extraPaths": [
-    "/opt/ros/rolling/lib/python3.12/site-packages/",
-    "/opt/ros/rolling/local/lib/python3.12/dist-packages/",
+    "/opt/ros/humble/lib/python3.12/site-packages/",
+    "/opt/ros/humble/local/lib/python3.12/dist-packages/",
     "${workspaceFolder}/install/"
   ],
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/waterlinked_dvl/bin/python",
