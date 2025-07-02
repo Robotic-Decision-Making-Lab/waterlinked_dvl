@@ -67,6 +67,9 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
     && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
+# Install Python dependencies
+RUN python3 -m pip install pre-commit
+
 WORKDIR $USER_WORKSPACE
 
 FROM desktop AS desktop-nvidia
