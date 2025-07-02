@@ -1,7 +1,7 @@
 {
   "name": "ROS 2 Dev Container",
   "dockerFile": "Dockerfile",
-  "context": "../..",
+  "context": "..",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/ubuntu/ws_ros/src/waterlinked_dvl,type=bind",
   "workspaceFolder": "/home/ubuntu/ws_ros/src/waterlinked_dvl",
   "remoteUser": "ubuntu",
@@ -11,15 +11,8 @@
     "--security-opt=seccomp:unconfined",
     "--security-opt=apparmor:unconfined",
     "--volume=/dev:/dev",
-    "--privileged",
-    "--volume=/run/user/1000:/run/user/1000"
+    "--privileged"
   ],
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}",
-    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
-    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
-    "PULSE_SERVER": "${localEnv:PULSE_SERVER}"
-  },
   "customizations": {
     "vscode": {
       "extensions": [

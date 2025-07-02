@@ -67,28 +67,15 @@ RUN . "/opt/ros/${ROS_DISTRO}/setup.sh" \
     && echo "source ${USER_WORKSPACE}/install/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "if [ -f /opt/ros/${ROS_DISTRO}/setup.bash ]; then source /opt/ros/${ROS_DISTRO}/setup.bash; fi" >> /home/$USERNAME/.bashrc
 
-# Install Python dependencies
-RUN python3 -m pip install pre-commit
-
-WORKDIR $USER_WORKSPACE
-
-FROM desktop AS desktop-nvidia
-
-# Install NVIDIA software
-RUN sudo apt-get update \
+# Install debugging/linting C++ packages
+RUN sudo apt-get -q update \
     && sudo apt-get -q -y upgrade \
-    && sudo apt-get install -y -qq --no-install-recommends \
-    libglvnd0 \
-    libgl1 \
-    libglx0 \
-    libegl1 \
-    libxext6 \
-    libx11-6 \
+    && sudo apt-get install -y \
+    clang-format-18 \
+    clang-tidy \
+    clang-tools \
     && sudo apt-get autoremove -y \
     && sudo apt-get clean -y \
     && sudo rm -rf /var/lib/apt/lists/*
 
-# Env vars for the nvidia-container-runtime.
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
-ENV QT_X11_NO_MITSHM=1
+WORKDIR $USER_WORKSPACE
