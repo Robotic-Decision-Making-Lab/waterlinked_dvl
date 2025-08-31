@@ -30,7 +30,7 @@ namespace waterlinked::test
 {
 
 /// Reports used for testing have been retrieved from the Waterlinked API documentation:
-/// https://waterlinked.github.io/dvl/dvl-protocol
+/// https://docs.waterlinked.com/dvl/dvl-protocol/
 
 TEST(JsonParsing, ParsesTransducerReport)
 {

@@ -36,13 +36,18 @@ colcon build && source install/setup.bash
 
 Prior to using waterlinked_dvl, first ensure that you can successfully connect
 to your respective device. For additional information, please refer to the
-Water Linked [networking documentation](https://waterlinked.github.io/dvl/networking/).
+Water Linked [networking documentation](https://docs.waterlinked.com/dvl/networking/).
 After verifying the network connection, the DVL ROS 2 driver can be launched
 with the following command:
 
 ```bash
 ros2 launch waterlinked_dvl_driver dvl.launch.py
 ```
+
+A sample configuration file can be found in `waterlinked_dvl_driver/config/dvl.yaml`,
+and the full list of parameters can be found in `waterlinked_dvl_driver/src/waterlinked_dvl_driver_parameters.yaml`.
+Refer to the [protocol documentation](https://docs.waterlinked.com/dvl/dvl-protocol/)
+for descriptions of all the DVL configuration parameters.
 
 ## Getting help
 
