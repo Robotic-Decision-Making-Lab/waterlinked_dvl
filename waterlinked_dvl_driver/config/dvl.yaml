@@ -1,7 +1,7 @@
 waterlinked_dvl_driver_node:
   ros__parameters:
     # Descriptions for all DVL configurations can be found on the Water Linked
-    # Documentation: https://waterlinked.github.io/dvl/dvl-protocol/
+    # Documentation: https://docs.waterlinked.com/dvl/dvl-protocol/
 
     # Default IP address for the DVL-A50 and DVL-125
     ip_address: "192.168.194.95"
