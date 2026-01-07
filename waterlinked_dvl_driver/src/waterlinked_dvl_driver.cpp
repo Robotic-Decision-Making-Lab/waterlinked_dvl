@@ -23,6 +23,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
+#include <cmath>
+
 namespace waterlinked::ros
 {
 
@@ -187,7 +189,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dead_reckoning_msg_.pose.pose.position.z = report.z;
 
     tf2::Quaternion q;
-    q.setRPY(report.roll, report.pitch, report.yaw);
+    q.setRPY(report.roll * M_PI / 180., report.pitch * M_PI / 180., report.yaw * M_PI / 180.);
     dead_reckoning_msg_.pose.pose.orientation = tf2::toMsg(q);
 
     dead_reckoning_msg_.pose.covariance[0] = report.std;
@@ -212,7 +214,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     odom_msg_.pose.pose.position.z = report.z;
 
     tf2::Quaternion q;
-    q.setRPY(report.roll, report.pitch, report.yaw);
+    q.setRPY(report.roll * M_PI / 180., report.pitch * M_PI / 180., report.yaw * M_PI / 180.);
     odom_msg_.pose.pose.orientation = tf2::toMsg(q);
 
     odom_msg_.pose.covariance[0] = report.std;
