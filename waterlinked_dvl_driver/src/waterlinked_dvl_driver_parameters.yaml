@@ -14,7 +14,7 @@ waterlinked_dvl_driver:
   timeout:
     type: int
     default_value: 5
-    description: "The timeout for the DVL connection (s)."
+    description: "The timeout for the DVL connection and command responses (s)."
     read_only: true
 
   frame_id:

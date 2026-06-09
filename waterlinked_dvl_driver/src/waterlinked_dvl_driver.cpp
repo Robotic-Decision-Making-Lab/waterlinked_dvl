@@ -70,8 +70,8 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   }
 
   try {
-    client_ =
-      std::make_unique<WaterLinkedClient>(params_.ip_address, params_.port, std::chrono::seconds(params_.timeout));
+    const auto timeout = std::chrono::seconds(params_.timeout);
+    client_ = std::make_unique<WaterLinkedClient>(params_.ip_address, params_.port, timeout, timeout);
   }
   catch (const std::exception & e) {
     RCLCPP_ERROR(get_logger(), "Failed to create WaterLinkedClient. %s", e.what());

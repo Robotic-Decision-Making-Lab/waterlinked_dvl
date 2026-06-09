@@ -45,10 +45,12 @@ public:
   /// - The IP address of the DVL (defaults to 192.168.194.95)
   /// - The port of the DVL (defaults to 16171)
   /// - a connection timeout (s, defaults to 5s)
+  /// - a command response timeout (s, defaults to 5s)
   explicit WaterLinkedClient(
     const std::string & addr = "192.168.194.95",
     std::uint16_t port = 16171,
-    std::chrono::seconds connection_timeout = std::chrono::seconds(5));
+    std::chrono::seconds connection_timeout = std::chrono::seconds(5),
+    std::chrono::seconds command_timeout = std::chrono::seconds(5));
 
   ~WaterLinkedClient();
 
@@ -127,7 +129,14 @@ private:
 
   std::atomic<bool> running_{false};
 
-  std::unordered_map<std::string, std::deque<std::promise<CommandResponse>>> pending_requests_;
+  struct PendingRequest
+  {
+    std::promise<CommandResponse> response;
+    std::chrono::steady_clock::time_point deadline;
+  };
+
+  std::chrono::steady_clock::duration command_timeout_;
+  std::unordered_map<std::string, std::deque<PendingRequest>> pending_requests_;
   std::mutex request_mutex_;
 
   std::thread polling_thread_;

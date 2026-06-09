@@ -152,7 +152,9 @@ auto connect(int socket, const struct sockaddr * addr, socklen_t addrlen, std::c
 WaterLinkedClient::WaterLinkedClient(
   const std::string & addr,
   std::uint16_t port,
-  std::chrono::seconds connection_timeout)
+  std::chrono::seconds connection_timeout,
+  std::chrono::seconds command_timeout)
+: command_timeout_(command_timeout)
 {
   // Open a TCP socket and connect to the DVL
   socket_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -199,7 +201,7 @@ auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::fut
   const std::string command_str{command.dump()};
   std::lock_guard lock(request_mutex_);
   auto & requests = pending_requests_[command_name];
-  requests.emplace_back(std::move(response));
+  requests.emplace_back(std::move(response), std::chrono::steady_clock::now() + command_timeout_);
 
   if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
     requests.pop_back();
@@ -294,8 +296,11 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
     std::lock_guard lock(request_mutex_);
     const auto pending_request = pending_requests_.find(response.response_to);
     if (pending_request != pending_requests_.end() && !pending_request->second.empty()) {
-      pending_request->second.front().set_value(response);
+      pending_request->second.front().response.set_value(response);
       pending_request->second.pop_front();
+      if (pending_request->second.empty()) {
+        pending_requests_.erase(pending_request);
+      }
     }
   } else {
     throw std::runtime_error("Received an unknown message type from the DVL: " + json_object.dump());
@@ -310,6 +315,39 @@ auto WaterLinkedClient::poll_connection() -> void
   std::size_t n_bytes_to_read = max_bytes_to_read;
 
   while (running_.load()) {
+    {
+      const auto now = std::chrono::steady_clock::now();
+      std::lock_guard lock(request_mutex_);
+      for (auto request = pending_requests_.begin(); request != pending_requests_.end();) {
+        auto & pending_responses = request->second;
+        while (!pending_responses.empty() && pending_responses.front().deadline <= now) {
+          pending_responses.front().response.set_value(
+            {request->first, false, "Timed out waiting for response to DVL command: " + request->first, {}});
+          pending_responses.pop_front();
+        }
+
+        if (pending_responses.empty()) {
+          request = pending_requests_.erase(request);
+        } else {
+          ++request;
+        }
+      }
+    }
+
+    struct pollfd pfds[] = {{.fd = socket_, .events = POLLIN, .revents = 0}};  // NOLINT
+    const int poll_result = poll(pfds, 1, 100);
+    if (poll_result < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      std::cout << "Failed to poll the DVL socket; the connection was likely lost.\n";
+      continue;
+    }
+
+    if (poll_result == 0) {
+      continue;
+    }
+
     if (read_from_socket(socket_, buffer, n_bytes_to_read) < 0) {
       std::cout << "Failed to read from the DVL; the connection was likely lost.\n";
     }
