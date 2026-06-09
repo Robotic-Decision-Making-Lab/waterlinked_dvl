@@ -341,15 +341,34 @@ auto WaterLinkedClient::poll_connection() -> void
         continue;
       }
       std::cout << "Failed to poll the DVL socket; the connection was likely lost.\n";
-      continue;
+      running_.store(false);
+      break;
     }
 
     if (poll_result == 0) {
       continue;
     }
 
-    if (read_from_socket(socket_, buffer, n_bytes_to_read) < 0) {
+    if ((pfds[0].revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+      std::cout << "The DVL socket was closed or entered an error state.\n";
+      running_.store(false);
+      break;
+    }
+
+    const ssize_t n_read = read_from_socket(socket_, buffer, n_bytes_to_read);
+    if (n_read < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
       std::cout << "Failed to read from the DVL; the connection was likely lost.\n";
+      running_.store(false);
+      break;
+    }
+
+    if (n_read == 0) {
+      std::cout << "The DVL connection was closed.\n";
+      running_.store(false);
+      break;
     }
 
     auto last_delim = std::ranges::find(buffer | std::views::reverse, protocol::DELIMITER);
@@ -373,6 +392,16 @@ auto WaterLinkedClient::poll_connection() -> void
 
     n_bytes_to_read = max_bytes_to_read - buffer.size();
   }
+
+  std::lock_guard lock(request_mutex_);
+  for (auto & [command, pending_responses] : pending_requests_) {
+    while (!pending_responses.empty()) {
+      pending_responses.front().response.set_value(
+        {command, false, "DVL connection closed while waiting for response to command: " + command, {}});
+      pending_responses.pop_front();
+    }
+  }
+  pending_requests_.clear();
 }
 
 }  // namespace waterlinked
