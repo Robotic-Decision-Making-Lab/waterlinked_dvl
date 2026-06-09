@@ -192,15 +192,19 @@ WaterLinkedClient::~WaterLinkedClient()
 
 auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::future<CommandResponse>
 {
-  const std::string command_str{command.dump()};
-  if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
-    throw std::runtime_error("Failed to send command to DVL");
-  }
-
+  const std::string command_name = command.at("command").get<std::string>();
   std::promise<CommandResponse> response;
   auto future = response.get_future();
 
-  pending_requests_[command.at("command")].emplace_back(std::move(response));
+  const std::string command_str{command.dump()};
+  std::lock_guard lock(request_mutex_);
+  auto & requests = pending_requests_[command_name];
+  requests.emplace_back(std::move(response));
+
+  if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
+    requests.pop_back();
+    throw std::runtime_error("Failed to send command to DVL");
+  }
 
   return future;
 }
@@ -287,9 +291,11 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
     }
   } else if (json_object.at("type") == "response") {
     const auto response = json_object.get<CommandResponse>();
-    if (pending_requests_.contains(response.response_to) && !pending_requests_[response.response_to].empty()) {
-      pending_requests_[response.response_to].front().set_value(response);
-      pending_requests_[response.response_to].pop_front();
+    std::lock_guard lock(request_mutex_);
+    const auto pending_request = pending_requests_.find(response.response_to);
+    if (pending_request != pending_requests_.end() && !pending_request->second.empty()) {
+      pending_request->second.front().set_value(response);
+      pending_request->second.pop_front();
     }
   } else {
     throw std::runtime_error("Received an unknown message type from the DVL: " + json_object.dump());
