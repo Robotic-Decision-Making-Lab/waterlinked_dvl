@@ -141,6 +141,7 @@ private:
 
   std::thread polling_thread_;
 
+  std::mutex callback_mutex_;
   std::vector<std::function<void(const VelocityReport &)>> velocity_report_callbacks_;
   std::vector<std::function<void(const DeadReckoningReport &)>> dead_reckoning_report_callbacks_;
 };

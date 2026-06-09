@@ -271,11 +271,13 @@ auto WaterLinkedClient::reset_dead_reckoning() -> std::future<CommandResponse>
 
 auto WaterLinkedClient::register_callback(std::function<void(const VelocityReport &)> && callback) -> void
 {
+  std::lock_guard lock(callback_mutex_);
   velocity_report_callbacks_.emplace_back(std::move(callback));
 }
 
 auto WaterLinkedClient::register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void
 {
+  std::lock_guard lock(callback_mutex_);
   dead_reckoning_report_callbacks_.emplace_back(std::move(callback));
 }
 
@@ -285,12 +287,22 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
   // responses.
   if (json_object.at("type") == "velocity") {
     const auto report = json_object.get<VelocityReport>();
-    for (const auto & callback : velocity_report_callbacks_) {
+    std::vector<std::function<void(const VelocityReport &)>> callbacks;
+    {
+      std::lock_guard lock(callback_mutex_);
+      callbacks = velocity_report_callbacks_;
+    }
+    for (const auto & callback : callbacks) {
       callback(report);
     }
   } else if (json_object.at("type") == "position_local") {
     const auto report = json_object.get<DeadReckoningReport>();
-    for (const auto & callback : dead_reckoning_report_callbacks_) {
+    std::vector<std::function<void(const DeadReckoningReport &)>> callbacks;
+    {
+      std::lock_guard lock(callback_mutex_);
+      callbacks = dead_reckoning_report_callbacks_;
+    }
+    for (const auto & callback : callbacks) {
       callback(report);
     }
   } else if (json_object.at("type") == "response") {
