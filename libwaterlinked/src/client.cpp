@@ -169,10 +169,12 @@ WaterLinkedClient::WaterLinkedClient(
   sockaddr.sin_addr.s_addr = inet_addr(addr.c_str());
 
   if (sockaddr.sin_addr.s_addr == INADDR_NONE) {
+    close(socket_);
     throw std::runtime_error("Invalid socket address " + addr);
   }
 
   if (connect(socket_, reinterpret_cast<struct sockaddr *>(&sockaddr), sizeof(sockaddr), connection_timeout) < 0) {
+    close(socket_);
     throw std::runtime_error(
       "An error occurred while attempting to connect to the DVL. Error: " + std::string(strerror(errno)));
   }
