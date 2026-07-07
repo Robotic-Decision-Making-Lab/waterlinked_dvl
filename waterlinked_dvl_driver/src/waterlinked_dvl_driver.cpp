@@ -100,6 +100,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   dvl_msg_.header.frame_id = params_.frame_id;
   dead_reckoning_msg_.header.frame_id = params_.frame_id;
   odom_msg_.header.frame_id = params_.frame_id;
+  odom_msg_.child_frame_id = params_.frame_id;
 
   dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
   dvl_msg_.dvl_type = marine_acoustic_msgs::msg::Dvl::DVL_TYPE_PISTON;  // 4-beam convex Janus array
