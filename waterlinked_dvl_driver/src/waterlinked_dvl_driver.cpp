@@ -81,12 +81,12 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   // Set the initial DVL configurations
   // This lets users set the default DVL configurations from a parameters/launch file
   const Configuration config{
-    static_cast<std::uint16_t>(params_.speed_of_sound),            // from int64_t
-    static_cast<std::uint16_t>(params_.mounting_rotation_offset),  // from int64_t
-    params_.acoustic_enabled,
-    params_.dark_mode_enabled,
-    params_.range_mode,
-    params_.periodic_cycling_enabled,
+    .speed_of_sound = static_cast<std::uint16_t>(params_.speed_of_sound),
+    .mounting_rotation_offset = static_cast<std::uint16_t>(params_.mounting_rotation_offset),
+    .acoustic_enabled = params_.acoustic_enabled,
+    .dark_mode_enabled = params_.dark_mode_enabled,
+    .range_mode = params_.range_mode,
+    .periodic_cycling_enabled = params_.periodic_cycling_enabled,
   };
   std::future<CommandResponse> f = client_->set_configuration(config);
 
@@ -134,7 +134,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   dead_reckoning_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "~/dead_reckoning_report", rclcpp::SystemDefaultsQoS());
 
-  client_->register_callback([this](const VelocityReport & report) {
+  client_->register_callback([this](const VelocityReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.time_of_validity);
     dvl_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     dvl_msg_.altitude = report.altitude;
@@ -148,7 +148,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
-        dvl_msg_.velocity_covar[i * 3 + j] = report.covariance(i, j);
+        dvl_msg_.velocity_covar[(i * 3) + j] = report.covariance(i, j);
       }
     }
 
@@ -164,7 +164,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   });
 
   // much of the following code could be moved into the above callback, but we separate it to improve readability
-  client_->register_callback([this](const VelocityReport & report) {
+  client_->register_callback([this](const VelocityReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.time_of_validity);
     odom_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
 
@@ -174,14 +174,14 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
-        odom_msg_.twist.covariance[i * 6 + j] = report.covariance(i, j);
+        odom_msg_.twist.covariance[(i * 6) + j] = report.covariance(i, j);
       }
     }
 
     odom_pub_->publish(odom_msg_);
   });
 
-  client_->register_callback([this](const DeadReckoningReport & report) {
+  client_->register_callback([this](const DeadReckoningReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.ts);
     dead_reckoning_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     dead_reckoning_msg_.pose.pose.position.x = report.x;
@@ -205,7 +205,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dead_reckoning_pub_->publish(dead_reckoning_msg_);
   });
 
-  client_->register_callback([this](const DeadReckoningReport & report) {
+  client_->register_callback([this](const DeadReckoningReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.ts);
     odom_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
 

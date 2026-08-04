@@ -53,7 +53,7 @@ auto main() -> int
   std::future<waterlinked::CommandResponse> f2 = client.reset_dead_reckoning();
 
   // You can also wait for the response asynchronously using a background thread
-  std::thread([f2 = std::move(f2)]() mutable {
+  std::thread([f2 = std::move(f2)]() mutable -> void {
     std::cout << "Result of command to reset dead reckoning: " << f2.get().success << "\n";
   }).detach();
 

@@ -31,7 +31,7 @@ auto main() -> int
   waterlinked::WaterLinkedClient client("192.168.194.95", 16171, std::chrono::seconds(5));
 
   // Register a callback to receive velocity reports
-  client.register_callback([](const waterlinked::VelocityReport & report) {
+  client.register_callback([](const waterlinked::VelocityReport & report) -> void {
     std::cout << "Received velocity report:\n";
     std::cout << "  Time: " << report.time.count() << "\n";
     std::cout << "  Velocity: (" << report.vx << ", " << report.vy << ", " << report.vz << ")\n";
@@ -44,7 +44,7 @@ auto main() -> int
   });
 
   // Register a callback to receive dead reckoning reports
-  client.register_callback([](const waterlinked::DeadReckoningReport & report) {
+  client.register_callback([](const waterlinked::DeadReckoningReport & report) -> void {
     std::cout << "Received dead reckoning report:\n";
     std::cout << "  Timestamp: " << report.ts.time_since_epoch().count() << "\n";
     std::cout << "  Position: (" << report.x << ", " << report.y << ", " << report.z << ") \n";
