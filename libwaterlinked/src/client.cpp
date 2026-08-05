@@ -276,7 +276,8 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
 {
   // There are only three types of messages sent by the DVL: velocity reports, dead reckoning reports, and command
   // responses.
-  if (json_object.at("type") == "velocity") {
+  if (json_object.at("type") == "velocity" || json_object.at("type") == "velocity_water") {
+    //We handle both velocity and velocity_water reports in the callback function
     const auto report = json_object.get<VelocityReport>();
     for (const auto & callback : velocity_report_callbacks_) {
       callback(report);

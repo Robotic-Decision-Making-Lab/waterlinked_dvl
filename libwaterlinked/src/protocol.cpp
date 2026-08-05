@@ -88,9 +88,12 @@ auto from_json(const nlohmann::json & j, VelocityReport & r) -> void
   j.at("vy").get_to(r.vy);
   j.at("vz").get_to(r.vz);
   j.at("fom").get_to(r.fom);
-  j.at("altitude").get_to(r.altitude);
+  if (j.contains("altitude")) {
+    j.at("altitude").get_to(r.altitude);  //Not available if type is "velocity_water"
+  }
   j.at("velocity_valid").get_to(r.velocity_valid);
   j.at("status").get_to(r.status);
+  j.at("type").get_to(r.type);
   j.at("time_of_validity").get_to(r.time_of_validity);
   j.at("time_of_transmission").get_to(r.time_of_transmission);
   j.at("covariance").get_to(r.covariance);
