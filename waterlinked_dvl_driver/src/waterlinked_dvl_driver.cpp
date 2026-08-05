@@ -144,9 +144,10 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dvl_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     if (report.type == "velocity_water") {
       dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_WATER;
+      dvl_msg_.altitude = NAN;  // We don't have altitude for water tracking reports, set to NAN to indicate that it is unknown
     } else {
       dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
-      dvl_msg_.altitude = report.altitude;  // We only have altitude for bottom lock reports, not water lock reports
+      dvl_msg_.altitude = report.altitude;
     }
     dvl_msg_.velocity.x = report.vx;
     dvl_msg_.velocity.y = report.vy;
@@ -155,6 +156,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dvl_msg_.beam_velocities_valid = report.velocity_valid;
     dvl_msg_.course_gnd = std::atan2(report.vy, report.vx);
     dvl_msg_.speed_gnd = std::sqrt((report.vx * report.vx) + (report.vy * report.vy));
+    dvl_msg_.sound_speed = params_.speed_of_sound;  //Note - if sound of speed changes outside of the driver we don't catch it
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
