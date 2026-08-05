@@ -81,12 +81,12 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   // Set the initial DVL configurations
   // This lets users set the default DVL configurations from a parameters/launch file
   const Configuration config{
-    static_cast<std::uint16_t>(params_.speed_of_sound),            // from int64_t
-    static_cast<std::uint16_t>(params_.mounting_rotation_offset),  // from int64_t
-    params_.acoustic_enabled,
-    params_.dark_mode_enabled,
-    params_.range_mode,
-    params_.periodic_cycling_enabled,
+    .speed_of_sound = static_cast<std::uint16_t>(params_.speed_of_sound),
+    .mounting_rotation_offset = static_cast<std::uint16_t>(params_.mounting_rotation_offset),
+    .acoustic_enabled = params_.acoustic_enabled,
+    .dark_mode_enabled = params_.dark_mode_enabled,
+    .range_mode = params_.range_mode,
+    .periodic_cycling_enabled = params_.periodic_cycling_enabled,
   };
   std::future<CommandResponse> f = client_->set_configuration(config);
 
@@ -134,7 +134,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   dead_reckoning_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "~/dead_reckoning_report", rclcpp::SystemDefaultsQoS());
 
-  client_->register_callback([this](const VelocityReport & report) {
+  client_->register_callback([this](const VelocityReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.time_of_validity);
     dvl_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     dvl_msg_.altitude = report.altitude;
@@ -144,11 +144,11 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dvl_msg_.beam_ranges_valid = true;
     dvl_msg_.beam_velocities_valid = report.velocity_valid;
     dvl_msg_.course_gnd = std::atan2(report.vy, report.vx);
-    dvl_msg_.speed_gnd = std::sqrt(report.vx * report.vx + report.vy * report.vy);
+    dvl_msg_.speed_gnd = std::sqrt((report.vx * report.vx) + (report.vy * report.vy));
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
-        dvl_msg_.velocity_covar[i * 3 + j] = report.covariance(i, j);
+        dvl_msg_.velocity_covar[(i * 3) + j] = report.covariance(i, j);
       }
     }
 
@@ -160,11 +160,11 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
       dvl_msg_.num_good_beams += report.transducers[i].beam_valid ? 1 : 0;
     }
 
-    dvl_pub_->publish(dvl_msg_);
+    dvl_pub_->publish(dvl_msg_);  // NOLINT(portability-template-virtual-member-function)
   });
 
   // much of the following code could be moved into the above callback, but we separate it to improve readability
-  client_->register_callback([this](const VelocityReport & report) {
+  client_->register_callback([this](const VelocityReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.time_of_validity);
     odom_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
 
@@ -174,14 +174,14 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
-        odom_msg_.twist.covariance[i * 6 + j] = report.covariance(i, j);
+        odom_msg_.twist.covariance[(i * 6) + j] = report.covariance(i, j);
       }
     }
 
-    odom_pub_->publish(odom_msg_);
+    odom_pub_->publish(odom_msg_);  // NOLINT(portability-template-virtual-member-function)
   });
 
-  client_->register_callback([this](const DeadReckoningReport & report) {
+  client_->register_callback([this](const DeadReckoningReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.ts);
     dead_reckoning_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     dead_reckoning_msg_.pose.pose.position.x = report.x;
@@ -202,10 +202,10 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dead_reckoning_msg_.pose.covariance[28] = -1;
     dead_reckoning_msg_.pose.covariance[35] = -1;
 
-    dead_reckoning_pub_->publish(dead_reckoning_msg_);
+    dead_reckoning_pub_->publish(dead_reckoning_msg_);  // NOLINT(portability-template-virtual-member-function)
   });
 
-  client_->register_callback([this](const DeadReckoningReport & report) {
+  client_->register_callback([this](const DeadReckoningReport & report) -> void {
     const auto t = std::chrono::time_point_cast<std::chrono::nanoseconds>(report.ts);
     odom_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
 
@@ -226,14 +226,14 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     odom_msg_.pose.covariance[28] = -1;
     odom_msg_.pose.covariance[35] = -1;
 
-    odom_pub_->publish(odom_msg_);
+    odom_pub_->publish(odom_msg_);  // NOLINT(portability-template-virtual-member-function)
   });
 
   enable_acoustic_srv_ = create_service<std_srvs::srv::SetBool>(
     "~/enable_acoustic",
     [this](
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
-      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response) -> void {
       std::future<CommandResponse> f = client_->enable_acoustics(request->data);
       populate_service_response(response, f);
     });
@@ -242,7 +242,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     "~/enable_dark_mode",
     [this](
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
-      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response) -> void {
       std::future<CommandResponse> f = client_->enable_dark_mode(request->data);
       populate_service_response(response, f);
     });
@@ -251,7 +251,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     "~/enable_periodic_cycling",
     [this](
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,  // NOLINT
-      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response) -> void {
       std::future<CommandResponse> f = client_->enable_periodic_cycling(request->data);
       populate_service_response(response, f);
     });
@@ -260,7 +260,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     "~/calibrate_gyro",
     [this](
       const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,  // NOLINT
-      std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+      std::shared_ptr<std_srvs::srv::Trigger::Response> response) -> void {
       std::future<CommandResponse> f = client_->calibrate_gyro();
       populate_service_response(response, f);
     });
@@ -269,7 +269,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     "~/reset_dead_reckoning",
     [this](
       const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,  // NOLINT
-      std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+      std::shared_ptr<std_srvs::srv::Trigger::Response> response) -> void {
       std::future<CommandResponse> f = client_->reset_dead_reckoning();
       populate_service_response(response, f);
     });
@@ -278,7 +278,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     "~/trigger_ping",
     [this](
       const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,  // NOLINT
-      std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+      std::shared_ptr<std_srvs::srv::Trigger::Response> response) -> void {
       std::future<CommandResponse> f = client_->trigger_ping();
       populate_service_response(response, f);
     });
