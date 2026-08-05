@@ -55,6 +55,15 @@ rclcpp_components_register_node(waterlinked_dvl_driver_library
     EXECUTABLE waterlinked_dvl_driver
 )
 
+# Keep clang-tidy focused on maintained sources; these two targets are generated.
+if(CMAKE_CXX_CLANG_TIDY)
+    set_target_properties(
+        waterlinked_dvl_driver_parameters
+        PROPERTIES CXX_CLANG_TIDY ""
+    )
+    set_target_properties(waterlinked_dvl_driver PROPERTIES CXX_CLANG_TIDY "")
+endif()
+
 install(
     TARGETS waterlinked_dvl_driver_library waterlinked_dvl_driver_parameters
     EXPORT export_waterlinked_dvl_driver_library

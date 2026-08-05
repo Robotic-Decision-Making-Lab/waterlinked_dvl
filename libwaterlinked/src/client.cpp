@@ -60,15 +60,14 @@ auto parse_bytes(const std::deque<std::uint8_t> & buffer) -> std::vector<nlohman
   std::vector<nlohmann::json> json_objects;
 
   auto start = buffer.begin();
-  auto iter = std::find_if(
-    start, buffer.end(), [](const std::uint8_t & b) -> bool { return b == protocol::DELIMITER; });
+  auto iter =
+    std::find_if(start, buffer.end(), [](const std::uint8_t & b) -> bool { return b == protocol::DELIMITER; });
 
   while (iter != buffer.end()) {
     const std::vector<std::uint8_t> data(start, iter);
 
     start = iter + 1;
-    iter = std::find_if(
-      start, buffer.end(), [](const std::uint8_t & b) -> bool { return b == protocol::DELIMITER; });
+    iter = std::find_if(start, buffer.end(), [](const std::uint8_t & b) -> bool { return b == protocol::DELIMITER; });
 
     if (data.empty()) {
       continue;
