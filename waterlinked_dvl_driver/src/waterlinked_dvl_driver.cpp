@@ -134,7 +134,8 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   dvl_msg_.beam_unit_vec[3].z = 0.38268343236508984;
 
   dvl_pub_ = create_publisher<marine_acoustic_msgs::msg::Dvl>("~/velocity_report", rclcpp::SystemDefaultsQoS());
-  dvl_water_pub_ = create_publisher<marine_acoustic_msgs::msg::Dvl>("~/velocity_water_report", rclcpp::SystemDefaultsQoS());
+  dvl_water_pub_ =
+    create_publisher<marine_acoustic_msgs::msg::Dvl>("~/velocity_water_report", rclcpp::SystemDefaultsQoS());
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("~/odom", rclcpp::SystemDefaultsQoS());
   dead_reckoning_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "~/dead_reckoning_report", rclcpp::SystemDefaultsQoS());
@@ -144,7 +145,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dvl_msg_.header.stamp = rclcpp::Time(t.time_since_epoch().count());
     if (report.type == "velocity_water") {
       dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_WATER;
-      dvl_msg_.altitude = NAN;  // We don't have altitude for water tracking reports, set to NAN to indicate that it is unknown
+      dvl_msg_.altitude = NAN;  // Set to NAN to indicate that it is unknown
     } else {
       dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_BOTTOM;
       dvl_msg_.altitude = report.altitude;
@@ -156,7 +157,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     dvl_msg_.beam_velocities_valid = report.velocity_valid;
     dvl_msg_.course_gnd = std::atan2(report.vy, report.vx);
     dvl_msg_.speed_gnd = std::sqrt((report.vx * report.vx) + (report.vy * report.vy));
-    dvl_msg_.sound_speed = params_.speed_of_sound;  //Note - if sound of speed changes outside of the driver we don't catch it
+    dvl_msg_.sound_speed = params_.speed_of_sound;  // OBS Can change outside of driver without being caught
 
     for (std::size_t i = 0; i < 3; ++i) {
       for (std::size_t j = 0; j < 3; ++j) {
@@ -171,8 +172,9 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
       dvl_msg_.range[i] = report.transducers[i].distance;
       dvl_msg_.num_good_beams += report.transducers[i].beam_valid ? 1 : 0;
     }
-    //Publish in separate topics - debatable if this is the best approach
-    //See : https://github.com/apl-ocean-engineering/marine_msgs/tree/main/marine_acoustic_msgs#dvl-specific-design-decisions
+    // Publish in separate topics - debatable if this is the best approach
+    // See :
+    // https://github.com/apl-ocean-engineering/marine_msgs/tree/main/marine_acoustic_msgs#dvl-specific-design-decisions
     if (report.type == "velocity_water") {
       dvl_water_pub_->publish(dvl_msg_);  // NOLINT(portability-template-virtual-member-function)
     } else {
