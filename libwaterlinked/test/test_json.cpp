@@ -21,8 +21,8 @@
 #include <gtest/gtest.h>
 
 #include <Eigen/Dense>
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <nlohmann/json.hpp>
 
 #include "libwaterlinked/protocol.hpp"
@@ -261,7 +261,6 @@ TEST(JsonParsing, ParseVelocityReport)
   EXPECT_DOUBLE_EQ(response.transducers[3].nsd, -88.32147216796875);
   EXPECT_TRUE(response.transducers[3].beam_valid);
 }
-
 
 TEST(JsonParsing, ParseVelocityWaterReport)
 {
