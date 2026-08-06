@@ -62,3 +62,9 @@ waterlinked_dvl_driver:
     default_value: true
     description: "Whether or not periodic cycling is enabled."
     read_only: true
+
+  hardware_trigger_enabled:
+    type: bool
+    default_value: false
+    description: "Whether or not hardware trigger is enabled."
+    read_only: true

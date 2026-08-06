@@ -41,6 +41,14 @@ auto from_json(const nlohmann::json & j, Configuration & r) -> void
   j.at("dark_mode_enabled").get_to(r.dark_mode_enabled);
   j.at("range_mode").get_to(r.range_mode);
   j.at("periodic_cycling_enabled").get_to(r.periodic_cycling_enabled);
+  if (j.contains("hardware_trigger_enabled")) {
+    bool hardware_trigger_enabled = false;
+    j.at("hardware_trigger_enabled").get_to(hardware_trigger_enabled);
+    r.hardware_trigger_enabled = hardware_trigger_enabled;
+  } else {
+    // Only available for Gen2 DVLs.
+    r.hardware_trigger_enabled = std::nullopt;
+  }
 }
 
 auto to_json(nlohmann::json & j, const Configuration & r) -> void
@@ -53,6 +61,9 @@ auto to_json(nlohmann::json & j, const Configuration & r) -> void
     {"range_mode", r.range_mode},
     {"periodic_cycling_enabled", r.periodic_cycling_enabled},
   };
+  if (r.hardware_trigger_enabled.has_value()) {
+    j["hardware_trigger_enabled"] = r.hardware_trigger_enabled.value();
+  }
 }
 
 auto from_json(const nlohmann::json & j, CommandResponse & r) -> void

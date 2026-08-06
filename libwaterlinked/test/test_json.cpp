@@ -95,7 +95,8 @@ TEST(JsonParsing, ParseConfiguration)
       "dark_mode_enabled":false,
       "mounting_rotation_offset":20.00,
       "range_mode":"auto",
-      "periodic_cycling_enabled":true
+      "periodic_cycling_enabled":true,
+      "hardware_trigger_enabled":false
     }
   )";
 
@@ -108,6 +109,8 @@ TEST(JsonParsing, ParseConfiguration)
   EXPECT_FLOAT_EQ(configuration.mounting_rotation_offset, 20.00);
   EXPECT_EQ(configuration.range_mode, "auto");
   EXPECT_TRUE(configuration.periodic_cycling_enabled);
+  ASSERT_TRUE(configuration.hardware_trigger_enabled.has_value());
+  EXPECT_FALSE(configuration.hardware_trigger_enabled.value());
 }
 
 TEST(JsonParsing, ParseCommandResponse)
@@ -123,7 +126,8 @@ TEST(JsonParsing, ParseCommandResponse)
         "dark_mode_enabled":false,
         "mounting_rotation_offset":20.00,
         "range_mode":"auto",
-        "periodic_cycling_enabled":true
+        "periodic_cycling_enabled":true,
+        "hardware_trigger_enabled":false
       },
       "format":"json_v3.1",
       "type":"response"
