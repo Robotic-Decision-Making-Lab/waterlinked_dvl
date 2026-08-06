@@ -3,10 +3,10 @@
 <package format="3">
 
   <name>waterlinked_dvl_driver</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>ROS 2 driver for Water Linked DVL devices</description>
 
-  <maintainer email="evanp922@gmail.com">Evan Palmer</maintainer>
+  <maintainer email="support@waterlinked.com">Water Linked</maintainer>
   <license>MIT</license>
 
   <url type="repository">https://github.com/waterlinked/waterlinked_dvl</url>
