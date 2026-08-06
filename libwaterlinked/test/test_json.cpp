@@ -109,8 +109,7 @@ TEST(JsonParsing, ParseConfiguration)
   EXPECT_FLOAT_EQ(configuration.mounting_rotation_offset, 20.00);
   EXPECT_EQ(configuration.range_mode, "auto");
   EXPECT_TRUE(configuration.periodic_cycling_enabled);
-  ASSERT_TRUE(configuration.hardware_trigger_enabled.has_value());
-  EXPECT_FALSE(configuration.hardware_trigger_enabled.value());
+  EXPECT_EQ(configuration.hardware_trigger_enabled, std::optional<bool>{false});
 
   // Gen1 DVLs do not report hardware trigger support.
   const std::string json_string_without_hw_trigger = R"(
