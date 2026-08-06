@@ -88,6 +88,7 @@ auto from_json(const nlohmann::json & j, VelocityReport & r) -> void
   j.at("vy").get_to(r.vy);
   j.at("vz").get_to(r.vz);
   j.at("fom").get_to(r.fom);
+  r.altitude = std::numeric_limits<double>::quiet_NaN();
   if (j.contains("altitude")) {
     j.at("altitude").get_to(r.altitude);  // Not available if type is "velocity_water"
   }

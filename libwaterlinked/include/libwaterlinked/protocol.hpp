@@ -87,7 +87,7 @@ struct VelocityReport
   /// are reserved for future use.
   std::uint8_t status;
 
-  /// Type of report ("velocity" or "water_tracking").
+  /// Type of report ("velocity" or "velocity_water").
   std::string type;
 
   /// Timestamp of the surface reflection, aka 'center of ping' (Unix timestamp in microseconds).
