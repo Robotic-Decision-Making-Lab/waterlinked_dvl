@@ -60,6 +60,7 @@ private:
   nav_msgs::msg::Odometry odom_msg_;
 
   std::shared_ptr<rclcpp::Publisher<marine_acoustic_msgs::msg::Dvl>> dvl_pub_;
+  std::shared_ptr<rclcpp::Publisher<marine_acoustic_msgs::msg::Dvl>> dvl_water_pub_;
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>> dead_reckoning_pub_;
   std::shared_ptr<rclcpp::Publisher<nav_msgs::msg::Odometry>> odom_pub_;
 

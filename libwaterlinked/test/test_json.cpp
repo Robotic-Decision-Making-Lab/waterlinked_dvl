@@ -22,6 +22,7 @@
 
 #include <Eigen/Dense>
 #include <chrono>
+#include <cmath>
 #include <nlohmann/json.hpp>
 
 #include "libwaterlinked/protocol.hpp"
@@ -258,6 +259,128 @@ TEST(JsonParsing, ParseVelocityReport)
   EXPECT_DOUBLE_EQ(response.transducers[3].distance, 0.5472000241279602);
   EXPECT_DOUBLE_EQ(response.transducers[3].rssi, -28.006759643554688);
   EXPECT_DOUBLE_EQ(response.transducers[3].nsd, -88.32147216796875);
+  EXPECT_TRUE(response.transducers[3].beam_valid);
+}
+
+TEST(JsonParsing, ParseVelocityWaterReport)
+{
+  const std::string json_string = R"(
+  {
+    "time": 486.6678771972656,
+    "vx": -0.005870406981557608,
+    "vy": -0.005043691955506802,
+    "vz": 0.0002322260697837919,
+    "fom": 0.002009979449212551,
+    "covariance": [
+      [
+        0.0000025099461709032767,
+        0.0000013035447636866593,
+        -3.271562576401266E-8
+      ],
+      [
+        0.0000013035447636866593,
+        0.000002912906211349764,
+        2.8023941922583617E-7
+      ],
+      [
+        -3.271562576401266E-8,
+        2.8023941922583617E-7,
+        1.9223701031023666E-7
+      ]
+    ],
+    "transducers": [
+      {
+        "id": 0,
+        "velocity": -0.0004092144372407347,
+        "distance": -1,
+        "rssi": -21.295808792114258,
+        "nsd": -43.26792907714844,
+        "beam_valid": true
+      },
+      {
+        "id": 1,
+        "velocity": 0.0004326871130615473,
+        "distance": -1,
+        "rssi": -24.12013816833496,
+        "nsd": -45.38116455078125,
+        "beam_valid": true
+      },
+      {
+        "id": 2,
+        "velocity": -0.0006910116062499583,
+        "distance": -1,
+        "rssi": -22.13231086730957,
+        "nsd": -44.35983657836914,
+        "beam_valid": true
+      },
+      {
+        "id": 3,
+        "velocity": 0.004602331202477217,
+        "distance": -1,
+        "rssi": -28.323562622070312,
+        "nsd": -39.62949752807617,
+        "beam_valid": true
+      }
+    ],
+    "velocity_valid": true,
+    "status": 0,
+    "format": "json_v3.3",
+    "type": "velocity_water",
+    "time_of_validity": 1786001128432658,
+    "time_of_transmission": 1786001129279697
+  }
+  )";
+
+  const auto obj = nlohmann::json::parse(json_string);
+  const auto response = obj.get<VelocityReport>();
+
+  EXPECT_EQ(response.time.count(), 486);
+  EXPECT_DOUBLE_EQ(response.vx, -0.005870406981557608);
+  EXPECT_DOUBLE_EQ(response.vy, -0.005043691955506802);
+  EXPECT_DOUBLE_EQ(response.vz, 0.0002322260697837919);
+  EXPECT_DOUBLE_EQ(response.fom, 0.002009979449212551);
+  EXPECT_TRUE(std::isnan(response.altitude));
+  EXPECT_EQ(response.transducers.size(), 4);
+  EXPECT_TRUE(response.velocity_valid);
+  EXPECT_EQ(response.status, 0);
+  EXPECT_EQ(response.type, "velocity_water");
+  EXPECT_EQ(response.time_of_validity.time_since_epoch().count(), 1786001128432658);
+  EXPECT_EQ(response.time_of_transmission.time_since_epoch().count(), 1786001129279697);
+
+  // Test the covariance matrix
+  Eigen::Matrix3d expected_covariance;
+  expected_covariance << 0.0000025099461709032767, 0.0000013035447636866593, -3.271562576401266E-8,
+    0.0000013035447636866593, 0.000002912906211349764, 2.8023941922583617E-7, -3.271562576401266E-8,
+    2.8023941922583617E-7, 1.9223701031023666E-7;
+  EXPECT_EQ(response.covariance, expected_covariance);
+
+  // Test the transducer reports
+  EXPECT_EQ(response.transducers[0].id, 0);
+  EXPECT_DOUBLE_EQ(response.transducers[0].velocity, -0.0004092144372407347);
+  EXPECT_DOUBLE_EQ(response.transducers[0].distance, -1.0);
+  EXPECT_DOUBLE_EQ(response.transducers[0].rssi, -21.295808792114258);
+  EXPECT_DOUBLE_EQ(response.transducers[0].nsd, -43.26792907714844);
+  EXPECT_TRUE(response.transducers[0].beam_valid);
+
+  EXPECT_EQ(response.transducers[1].id, 1);
+  EXPECT_DOUBLE_EQ(response.transducers[1].velocity, 0.0004326871130615473);
+  EXPECT_DOUBLE_EQ(response.transducers[1].distance, -1.0);
+  EXPECT_DOUBLE_EQ(response.transducers[1].rssi, -24.12013816833496);
+  EXPECT_DOUBLE_EQ(response.transducers[1].nsd, -45.38116455078125);
+  EXPECT_TRUE(response.transducers[1].beam_valid);
+
+  EXPECT_EQ(response.transducers[2].id, 2);
+  EXPECT_DOUBLE_EQ(response.transducers[2].velocity, -0.0006910116062499583);
+  EXPECT_DOUBLE_EQ(response.transducers[2].distance, -1.0);
+  EXPECT_DOUBLE_EQ(response.transducers[2].rssi, -22.13231086730957);
+  EXPECT_DOUBLE_EQ(response.transducers[2].nsd, -44.35983657836914);
+  EXPECT_TRUE(response.transducers[2].beam_valid);
+
+  EXPECT_EQ(response.transducers[3].id, 3);
+  EXPECT_DOUBLE_EQ(response.transducers[3].velocity, 0.004602331202477217);
+  EXPECT_DOUBLE_EQ(response.transducers[3].distance, -1.0);
+  EXPECT_DOUBLE_EQ(response.transducers[3].rssi, -28.323562622070312);
+  EXPECT_DOUBLE_EQ(response.transducers[3].nsd, -39.62949752807617);
   EXPECT_TRUE(response.transducers[3].beam_valid);
 }
 
