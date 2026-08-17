@@ -210,8 +210,7 @@ auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::fut
     requests.emplace_back(std::move(response), std::chrono::steady_clock::now() + command_timeout_);
   }
 
-  if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
-    // If the send fails, we need to remove the pending request from the queue so that it doesn't hang forever
+  const auto remove_pending_request = [this, &command_name]() -> void {
     const std::scoped_lock request_lock(request_mutex_);
     auto requests = pending_requests_.find(command_name);
     if (requests != pending_requests_.end() && !requests->second.empty()) {
@@ -220,8 +219,26 @@ auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::fut
         pending_requests_.erase(requests);
       }
     }
+  };
 
-    throw std::runtime_error("Failed to send command to DVL");
+  std::size_t total_sent = 0;
+  while (total_sent < command_str.size()) {
+    const ssize_t n_sent = send(socket_, command_str.data() + total_sent, command_str.size() - total_sent, 0);
+    if (n_sent < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+
+      remove_pending_request();
+      throw std::runtime_error("Failed to send command to DVL");
+    }
+
+    if (n_sent == 0) {
+      remove_pending_request();
+      throw std::runtime_error("Failed to send full command to DVL");
+    }
+
+    total_sent += static_cast<std::size_t>(n_sent);
   }
 
   return future;
