@@ -429,7 +429,10 @@ auto WaterLinkedClient::poll_connection() -> void
   for (auto & [command, pending_responses] : pending_requests_) {
     while (!pending_responses.empty()) {
       pending_responses.front().response.set_value(
-        {command, false, "DVL connection closed while waiting for response to command: " + command, {}});
+        {.response_to = command,
+         .success = false,
+         .error_message = "DVL connection closed while waiting for response to command: " + command,
+         .result = {}});
       pending_responses.pop_front();
     }
   }
