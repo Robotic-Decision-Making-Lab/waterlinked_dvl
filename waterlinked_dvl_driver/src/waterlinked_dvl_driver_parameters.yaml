@@ -66,5 +66,5 @@ waterlinked_dvl_driver:
   hardware_trigger_enabled:
     type: bool
     default_value: false
-    description: "Whether or not hardware trigger is enabled."
+    description: "Whether or not hardware trigger is enabled. Not available for A50/A125."
     read_only: true
