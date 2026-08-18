@@ -137,6 +137,7 @@ private:
 
   std::chrono::steady_clock::duration command_timeout_;
   std::unordered_map<std::string, std::deque<PendingRequest>> pending_requests_;
+  std::mutex send_mutex_;
   std::mutex request_mutex_;
 
   std::thread polling_thread_;

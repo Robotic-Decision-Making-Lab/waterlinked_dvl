@@ -202,13 +202,43 @@ auto WaterLinkedClient::send_command(const nlohmann::json & command) -> std::fut
   auto future = response.get_future();
 
   const std::string command_str{command.dump()};
-  std::lock_guard lock(request_mutex_);
-  auto & requests = pending_requests_[command_name];
-  requests.emplace_back(std::move(response), std::chrono::steady_clock::now() + command_timeout_);
+  const std::scoped_lock send_lock(send_mutex_);
 
-  if (send(socket_, command_str.c_str(), command_str.size(), 0) < 0) {
-    requests.pop_back();
-    throw std::runtime_error("Failed to send command to DVL");
+  {
+    const std::scoped_lock request_lock(request_mutex_);
+    auto & requests = pending_requests_[command_name];
+    requests.emplace_back(std::move(response), std::chrono::steady_clock::now() + command_timeout_);
+  }
+
+  const auto remove_pending_request = [this, &command_name]() -> void {
+    const std::scoped_lock request_lock(request_mutex_);
+    auto requests = pending_requests_.find(command_name);
+    if (requests != pending_requests_.end() && !requests->second.empty()) {
+      requests->second.pop_back();
+      if (requests->second.empty()) {
+        pending_requests_.erase(requests);
+      }
+    }
+  };
+
+  std::size_t total_sent = 0;
+  while (total_sent < command_str.size()) {
+    const ssize_t n_sent = send(socket_, command_str.data() + total_sent, command_str.size() - total_sent, 0);
+    if (n_sent < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+
+      remove_pending_request();
+      throw std::runtime_error("Failed to send command to DVL");
+    }
+
+    if (n_sent == 0) {
+      remove_pending_request();
+      throw std::runtime_error("Failed to send full command to DVL");
+    }
+
+    total_sent += static_cast<std::size_t>(n_sent);
   }
 
   return future;
@@ -272,13 +302,13 @@ auto WaterLinkedClient::reset_dead_reckoning() -> std::future<CommandResponse>
 
 auto WaterLinkedClient::register_callback(std::function<void(const VelocityReport &)> && callback) -> void
 {
-  std::lock_guard lock(callback_mutex_);
+  const std::scoped_lock lock(callback_mutex_);
   velocity_report_callbacks_.emplace_back(std::move(callback));
 }
 
 auto WaterLinkedClient::register_callback(std::function<void(const DeadReckoningReport &)> && callback) -> void
 {
-  std::lock_guard lock(callback_mutex_);
+  const std::scoped_lock lock(callback_mutex_);
   dead_reckoning_report_callbacks_.emplace_back(std::move(callback));
 }
 
@@ -291,7 +321,7 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
     const auto report = json_object.get<VelocityReport>();
     std::vector<std::function<void(const VelocityReport &)>> callbacks;
     {
-      std::lock_guard lock(callback_mutex_);
+      const std::scoped_lock lock(callback_mutex_);
       callbacks = velocity_report_callbacks_;
     }
     for (const auto & callback : callbacks) {
@@ -301,7 +331,7 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
     const auto report = json_object.get<DeadReckoningReport>();
     std::vector<std::function<void(const DeadReckoningReport &)>> callbacks;
     {
-      std::lock_guard lock(callback_mutex_);
+      const std::scoped_lock lock(callback_mutex_);
       callbacks = dead_reckoning_report_callbacks_;
     }
     for (const auto & callback : callbacks) {
@@ -309,7 +339,7 @@ auto WaterLinkedClient::process_json_object(const nlohmann::json & json_object) 
     }
   } else if (json_object.at("type") == "response") {
     const auto response = json_object.get<CommandResponse>();
-    std::lock_guard lock(request_mutex_);
+    const std::scoped_lock lock(request_mutex_);
     const auto pending_request = pending_requests_.find(response.response_to);
     if (pending_request != pending_requests_.end() && !pending_request->second.empty()) {
       pending_request->second.front().response.set_value(response);
@@ -333,12 +363,15 @@ auto WaterLinkedClient::poll_connection() -> void
   while (running_.load()) {
     {
       const auto now = std::chrono::steady_clock::now();
-      std::lock_guard lock(request_mutex_);
+      const std::scoped_lock lock(request_mutex_);
       for (auto request = pending_requests_.begin(); request != pending_requests_.end();) {
         auto & pending_responses = request->second;
         while (!pending_responses.empty() && pending_responses.front().deadline <= now) {
           pending_responses.front().response.set_value(
-            {request->first, false, "Timed out waiting for response to DVL command: " + request->first, {}});
+            {.response_to = request->first,
+             .success = false,
+             .error_message = "Timed out waiting for response to DVL command: " + request->first,
+             .result = {}});
           pending_responses.pop_front();
         }
 
@@ -409,11 +442,14 @@ auto WaterLinkedClient::poll_connection() -> void
     n_bytes_to_read = max_bytes_to_read - buffer.size();
   }
 
-  std::lock_guard lock(request_mutex_);
+  const std::scoped_lock lock(request_mutex_);
   for (auto & [command, pending_responses] : pending_requests_) {
     while (!pending_responses.empty()) {
       pending_responses.front().response.set_value(
-        {command, false, "DVL connection closed while waiting for response to command: " + command, {}});
+        {.response_to = command,
+         .success = false,
+         .error_message = "DVL connection closed while waiting for response to command: " + command,
+         .result = {}});
       pending_responses.pop_front();
     }
   }

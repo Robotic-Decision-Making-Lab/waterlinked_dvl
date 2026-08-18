@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(
     libwaterlinked
-    VERSION 0.0.1
+    VERSION 0.0.2
     LANGUAGES CXX
     DESCRIPTION "C++ library used to interact with the Water Linked DVL devices"
 )
