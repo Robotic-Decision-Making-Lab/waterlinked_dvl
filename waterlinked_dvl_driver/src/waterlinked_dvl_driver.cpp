@@ -130,6 +130,7 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
   dvl_msg_.header.frame_id = params_.frame_id;
   dead_reckoning_msg_.header.frame_id = params_.frame_id;
   odom_msg_.header.frame_id = params_.frame_id;
+  odom_msg_.child_frame_id = params_.frame_id;
 
   if (params_.range_mode == "wt") {
     dvl_msg_.velocity_mode = marine_acoustic_msgs::msg::Dvl::DVL_MODE_WATER;
