@@ -155,6 +155,9 @@ struct Configuration
   /// true for normal operation where the DVL periodically searches for bottom lock shorter than the existing bottom
   /// lock, false if periodic cycling is disabled.
   bool periodic_cycling_enabled;
+
+  /// true to enable hardware triggering of the DVL, false to disable hardware triggering. Only available for Gen2 DVLs.
+  std::optional<bool> hardware_trigger_enabled;
 };
 
 /// Response sent by the DVL after a command is sent.

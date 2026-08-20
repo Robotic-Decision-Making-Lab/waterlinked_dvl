@@ -40,3 +40,6 @@ waterlinked_dvl_driver_node:
     # periodically searching for a bottom lock shorter than the existing bottom
     # lock
     periodic_cycling_enabled: true
+
+    # Disable hardware trigger by default. This is only available for Gen2 DVLs.
+    hardware_trigger_enabled: false

@@ -77,17 +77,47 @@ auto WaterLinkedDvlDriver::on_configure(const rclcpp_lifecycle::State & /*previo
     RCLCPP_ERROR(get_logger(), "Failed to create WaterLinkedClient. %s", e.what());
     return CallbackReturn::ERROR;
   }
+  // Get current configuration
+  CommandResponse get_config_response;
+  try {
+    get_config_response = client_->get_configuration().get();
+  }
+  catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Failed to get current DVL configuration: %s", e.what());
+    return CallbackReturn::ERROR;
+  }
 
-  // Set the initial DVL configurations
-  // This lets users set the default DVL configurations from a parameters/launch file
-  const Configuration config{
-    .speed_of_sound = static_cast<std::uint16_t>(params_.speed_of_sound),
-    .mounting_rotation_offset = static_cast<std::uint16_t>(params_.mounting_rotation_offset),
-    .acoustic_enabled = params_.acoustic_enabled,
-    .dark_mode_enabled = params_.dark_mode_enabled,
-    .range_mode = params_.range_mode,
-    .periodic_cycling_enabled = params_.periodic_cycling_enabled,
-  };
+  if (!get_config_response.success) {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Failed to get current DVL configuration: %s",
+      get_config_response.error_message.c_str());  // NOLINT
+    return CallbackReturn::ERROR;
+  }
+
+  Configuration config;
+  try {
+    config = get_config_response.result.get<Configuration>();
+  }
+  catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Failed to parse current DVL configuration: %s", e.what());
+    return CallbackReturn::ERROR;
+  }
+  // Use configured ROS parameters as desired startup configuration.
+  config.speed_of_sound = static_cast<std::uint16_t>(params_.speed_of_sound);
+  config.mounting_rotation_offset = static_cast<std::uint16_t>(params_.mounting_rotation_offset);
+  config.range_mode = params_.range_mode;
+  config.acoustic_enabled = params_.acoustic_enabled;
+  config.dark_mode_enabled = params_.dark_mode_enabled;
+  config.periodic_cycling_enabled = params_.periodic_cycling_enabled;
+  if (config.hardware_trigger_enabled.has_value()) {
+    config.hardware_trigger_enabled = params_.hardware_trigger_enabled;
+  } else if (params_.hardware_trigger_enabled) {
+    RCLCPP_WARN(
+      get_logger(),
+      "Ignoring parameter 'hardware_trigger_enabled=true': this DVL does not report hardware trigger support.");
+  }
+
   std::future<CommandResponse> f = client_->set_configuration(config);
 
   const CommandResponse response = f.get();

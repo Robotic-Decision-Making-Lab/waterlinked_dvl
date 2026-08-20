@@ -96,7 +96,8 @@ TEST(JsonParsing, ParseConfiguration)
       "dark_mode_enabled":false,
       "mounting_rotation_offset":20.00,
       "range_mode":"auto",
-      "periodic_cycling_enabled":true
+      "periodic_cycling_enabled":true,
+      "hardware_trigger_enabled":false
     }
   )";
 
@@ -109,6 +110,23 @@ TEST(JsonParsing, ParseConfiguration)
   EXPECT_FLOAT_EQ(configuration.mounting_rotation_offset, 20.00);
   EXPECT_EQ(configuration.range_mode, "auto");
   EXPECT_TRUE(configuration.periodic_cycling_enabled);
+  EXPECT_EQ(configuration.hardware_trigger_enabled, std::optional<bool>{false});
+
+  // Gen1 DVLs do not report hardware trigger support.
+  const std::string json_string_without_hw_trigger = R"(
+    {
+      "speed_of_sound":1475.00,
+      "acoustic_enabled":true,
+      "dark_mode_enabled":false,
+      "mounting_rotation_offset":20.00,
+      "range_mode":"auto",
+      "periodic_cycling_enabled":true
+    }
+  )";
+
+  const auto obj_without_hw_trigger = nlohmann::json::parse(json_string_without_hw_trigger);
+  const auto configuration_without_hw_trigger = obj_without_hw_trigger.get<Configuration>();
+  EXPECT_FALSE(configuration_without_hw_trigger.hardware_trigger_enabled.has_value());
 }
 
 TEST(JsonParsing, ParseCommandResponse)
@@ -124,7 +142,8 @@ TEST(JsonParsing, ParseCommandResponse)
         "dark_mode_enabled":false,
         "mounting_rotation_offset":20.00,
         "range_mode":"auto",
-        "periodic_cycling_enabled":true
+        "periodic_cycling_enabled":true,
+        "hardware_trigger_enabled":false
       },
       "format":"json_v3.1",
       "type":"response"
