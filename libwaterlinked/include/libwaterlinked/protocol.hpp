@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cstdint>
 #include <nlohmann/json.hpp>
+#include <optional>
 
 namespace waterlinked
 {
